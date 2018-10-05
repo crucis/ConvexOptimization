@@ -1,4 +1,4 @@
-import autograd.numpy as np
+import numpy as np
 
 class functionObj:
     def __init__(self, func):    
@@ -7,7 +7,7 @@ class functionObj:
         self.best_x = np.inf
 
     def __call__(self, x):
-        self.fevals = self.fevasl + 1
+        self.fevals = self.fevals + 1
         result = self.func(x)
         assert np.isnan(result) == False, "X out of domain"
         return result
