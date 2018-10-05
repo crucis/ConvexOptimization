@@ -1,3 +1,3 @@
-from functionObj import functionObj
+from .functionObj import functionObj
 
 __all__ = ['functionObj']
