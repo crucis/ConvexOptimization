@@ -60,7 +60,7 @@ class FibonacciSearch(optimizer):
         for i in range(n):
             x_aux = x_new
             x_new = x_new + x_old
-            if np.isnan(x_new):
+            if x_new > 1e25:
                 self.maxIter = i - 1
                 break
             fib_list += [x_new]
