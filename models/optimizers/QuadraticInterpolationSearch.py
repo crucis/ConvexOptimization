@@ -1,5 +1,5 @@
 from .optimizer import optimizer
-import numpy as np
+import autograd.numpy as np
 from copy import copy
 
 class QuadraticInterpolationSearch(optimizer):
