@@ -6,5 +6,6 @@ f_x_obj = functionObj(f_x)
 
 opt = DichotomousSearch(f_x_obj, epsilon = 1e-9, xtol = 1e-6)
 
-print(opt.find_min())
-print(f_x_obj.fevals)
+
+print('X: %.9f \nF_x: %.9f'%(opt.find_min(), f_x_obj(opt.find_min())))
+print('Function evals: %d'%(f_x_obj.fevals - 1))
