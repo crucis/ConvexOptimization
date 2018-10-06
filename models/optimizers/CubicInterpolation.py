@@ -32,9 +32,9 @@ class CubicInterpolation(optimizer):
             if np.abs(self.x_mean - self.x_oldmean) < self.xtol:
                 break
             best_index = np.argmax(self.f)
-            self.x_oldmean = self.x_mean
-            self.x[best_index] = self.x_mean
-            self.f[best_index] = self.f_mean
+            self.x_oldmean = copy(self.x_mean)
+            self.x[best_index] = copy(self.x_mean)
+            self.f[best_index] = copy(self.f_mean)
             if best_index == 0:
                 self.grad_f_1 = self.grad_func(self.x_mean[np.newaxis])[0]
 
@@ -44,6 +44,7 @@ class CubicInterpolation(optimizer):
     def _get_beta(self):
         numerator = self.f[1] - self.f[0] + self.grad_f_1*(self.x[0] - self.x[1])
         denominator = (self.x[0] - self.x[1])**2
+
         return numerator/denominator
     
 
@@ -66,7 +67,7 @@ class CubicInterpolation(optimizer):
 
 
     def _get_a3(self):
-        return (self.beta - self.gamma)/(self.theta - self.phi)
+        return (self.beta - self.gamma)/(self.theta - self.phi) + 1e-9
 
 
     def _get_a2(self):
@@ -82,9 +83,10 @@ class CubicInterpolation(optimizer):
         negative_result = (1/(3*self.a_3)) * (-self.a_2 + np.sqrt(self.a_2**2 + 3*self.a_1*self.a_3))
         return (positive_result, negative_result)
 
+
     def _get_x_mean_minimizer(self):
         first_result, second_result = self._get_extremum_points()
         if first_result > - (self.a_2/(3*self.a_3)):
             return first_result
-        else:
+        elif second_result > - (self.a_2/(3*self.a_3)):
             return second_result
