@@ -1,5 +1,5 @@
 from .optimizer import optimizer
-import autograd.numpy as np
+import numpy as np
 from copy import copy
 
 
