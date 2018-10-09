@@ -1,4 +1,4 @@
-from models import functionObj
+from functions import functionObj
 from models.optimizers import CubicInterpolation
 import autograd.numpy as np
 

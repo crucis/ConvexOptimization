@@ -1,4 +1,4 @@
-from models import functionObj
+from functions import functionObj
 from models.optimizers import QuadraticInterpolationSearch
 
 f_x = lambda x: x**2 - 4*x + 4
