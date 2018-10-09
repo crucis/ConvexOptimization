@@ -51,12 +51,16 @@ class FibonacciSearch(optimizer):
         x_new = 1
         x_old = 1
         fib_list += [x_old]
+        if n == 1:
+            return fib_list
         fib_list += [x_new]
-        for i in range(n):
+        if n == 2:
+            return fib_list
+        for i in range(n - 2):
             x_aux = x_new
             x_new = x_new + x_old
             if x_new > 1e30:
-                self.maxIter = i - 1
+                self.maxIter = len(fib_list)
                 break
             fib_list += [x_new]
             x_old = x_aux
