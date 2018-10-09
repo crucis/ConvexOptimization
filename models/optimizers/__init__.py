@@ -3,6 +3,7 @@ from .FibonacciSearch import FibonacciSearch
 from .GoldenSectionSearch import GoldenSectionSearch
 from .QuadraticInterpolationSearch import QuadraticInterpolationSearch
 from .CubicInterpolation import CubicInterpolation
+from .DaviesSwannCampey import DaviesSwannCampey
 from .optimizer import optimizer
 
 __all__ = [
@@ -11,4 +12,5 @@ __all__ = [
     'GoldenSectionSearch', 
     'QuadraticInterpolationSearch', 
     'CubicInterpolation',
+    'DaviesSwannCampey',
     'optimizer']
