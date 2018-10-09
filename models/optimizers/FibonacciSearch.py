@@ -56,7 +56,7 @@ class FibonacciSearch(optimizer):
         fib_list += [x_new]
         if n == 2:
             return fib_list
-        for i in range(n - 2):
+        for _ in range(n - 2):
             x_aux = x_new
             x_new = x_new + x_old
             if x_new > 1e30:
