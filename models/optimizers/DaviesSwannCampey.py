@@ -7,7 +7,7 @@ class DaviesSwannCampey(optimizer):
     def __init__(self, func, 
                         x_0 = None, 
                         initial_increment = None, 
-                        scaling_constant = 0.7, 
+                        scaling_constant = 0.1,
                         interval = [-100, 100],
                         maxIter = 1e3, 
                         xtol = 1e-6, 
@@ -23,25 +23,24 @@ class DaviesSwannCampey(optimizer):
         for _ in range(1, self.maxIter):
             step7 = False
             # step 2
+            self.x = [self.x[0]]
             self.x_left = self.x[0] - self.increment
             self.x += [self.x[0] + self.increment]
             self.f = [self.objectiveFunction(self.x[0])]
             self.f += [self.objectiveFunction(self.x[1])]
-            print('X[0]: %f, F[0]: %f, f[1]: %f'%(self.x[0], self.f[0], self.f[1]))
             self.n = len(self.f) - 1
-            print("Increment: %f"%self.increment)
 
             # step 3
             if self.f[0] > self.f[1]:
+                #print('X[0]: %f, F[0]: %f, f[1]: %f'%(self.x[0], self.f[0], self.f[1]))
                 self.p = 1
                 # step 4
-                print('Step 4')
                 self._compute_new_f()
             else: # f[0] <= f[1]
                 self.f_left = self.objectiveFunction(self.x_left)
+                #print('X[0]: %f, F[-1]: %f F[0]: %f, f[1]: %f'%(self.x[0], self.f_left, self.f[0], self.f[1]))
                 if self.f_left < self.f[0]:
                     self.p = -1 
-                    print('Step 4')
                     # step 4
                     self._compute_new_f()
                 else: # f[-1] >= f[0] <= f[1]
@@ -51,11 +50,8 @@ class DaviesSwannCampey(optimizer):
                         break
                     self.x[0] = aux
                     if self.increment <= self.xtol:
-                        print('Increment: %f'%self.increment)
-                        print('caiu')
                         break
                     else:
-                        print('nesse')
                         self.increment = self.scaling_constant*self.increment
                         step7 = True
             if step7 == False:
@@ -73,12 +69,9 @@ class DaviesSwannCampey(optimizer):
                     if aux == False:
                         break
                     self.x[0] = aux
-                if 2**(self.n - 1)*self.increment <= self.xtol:
-                    print('Increment: %f, N: %d'%(self.increment, self.n))
-                    print('aqui')
+                if 2**(self.n - 2)*self.increment <= self.xtol:
                     break
                 else:
-                    print('esse')
                     self.increment = self.scaling_constant*self.increment
         # step 8
         return self.x[0]
@@ -88,10 +81,9 @@ class DaviesSwannCampey(optimizer):
     def _compute_new_f(self):
         while True:
             self.x += [self.x[self.n] + 2**(self.n)*self.p*self.increment]
-            self.f += [self.objectiveFunction(self.x[self.n])]
+            self.f += [self.objectiveFunction(self.x[self.n + 1])]
             self.n = self.n + 1
-            print(self.f)
-            if self.f[self.n] <= self.f[self.n-1]:
+            if self.f[self.n] > self.f[self.n-1]:
                 break
 
             
@@ -100,7 +92,6 @@ class DaviesSwannCampey(optimizer):
     def _compute_new_x0_based_on_x0(self):
         numerator = self.increment*(self.f_left - self.f[1])
         denominator = 2*(self.f_left - 2*self.f[0] + self.f[1])
-        print('Step7: %f'%(numerator/denominator))
         if np.isclose(denominator, 0, atol=self.xtol):
             return False
         else:
