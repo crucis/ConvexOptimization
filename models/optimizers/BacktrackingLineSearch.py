@@ -6,9 +6,8 @@ import autograd.numpy as np
 class BacktrackingLineSearch(optimizer):
     def __init__(self, func, 
                         initial_x,
-                        delta_x,
                         alpha = 0.01, 
-                        beta = 0.5,
+                        beta = 0.1,
                         interval = [-100, 100],
                         maxIter = 1e3, 
                         xtol = 1e-6, 
@@ -19,18 +18,23 @@ class BacktrackingLineSearch(optimizer):
 
         self.alpha = alpha
         self.beta = beta
-        self.delta_x = delta_x
-        self.t = 10
+        self.t = 1
         self.grad_func = grad(func)
         self.x = initial_x
 
     
     def find_min(self):
+        grad_x = self.grad_func(self.x)
         for _ in range(self.maxIter):
-            if self.objectiveFunction(self.x + self.t*self.delta_x) \
-                <= self.objectiveFunction(self.x) + \
-                    self.alpha*self.t*np.transpose(self.grad_func(self.x))*self.delta_x:
-                break
-            self.t = self.beta*self.t
+            self.t = 1
+            self.delta_x = grad_x
+            f_x = self.objectiveFunction(self.x)
+            while self.objectiveFunction(self.x + self.t*self.delta_x) \
+                >  f_x + self.alpha*self.t*np.transpose(grad_x)*self.delta_x:
+                self.t = self.beta * self.t
 
-        return self.t
+            self.x = self.x + self.t * self.delta_x
+            grad_x = self.grad_func(self.x)
+            if np.linalg.norm(grad_x) <= self.xtol:
+                break
+        return self.x
