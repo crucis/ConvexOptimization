@@ -21,5 +21,6 @@ print('X: %.9f \nF_x: %.9f'%(x_min, f_x_obj(x_min)))
 print('Function evals: %d'%(f_x_obj.fevals - 1))
 
 
-plt.plot(f_x_obj.all_evals)
+plt.plot(f_x_obj.all_evals, label = 'F(x)')
+plt.legend()
 plt.show()
