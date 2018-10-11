@@ -10,27 +10,29 @@ class functionObj:
         self.all_evals = []
         self.all_x = []
 
-    def __call__(self, x):
+    def __call__(self, x, save_eval = True):
+        if not save_eval:
+            return self.func(x)
         self.fevals = self.fevals + 1
         result = self.func(x)
         
         # Autograd ArrayBox behaves differently from numpy, that fixes it.
         if type(result) == np.numpy_boxes.ArrayBox:
-            result_copy = copy(result._value[0])
+            result_copy = copy(result._value)
         else:
             result_copy = copy(result)
         if type(x) == np.numpy_boxes.ArrayBox:
-            x_copy = x._value[0]
+            x_copy = x._value
         else:
             x_copy = x
         
-        assert np.isnan(result_copy) == False, "X out of domain"
+        assert np.isnan(result_copy).all() == False, "X out of domain"
         self.all_evals += [result_copy]
         self.all_x += [x_copy]
-        if result_copy < self.best_f:
+        if (result_copy < self.best_f).any():
             self.best_x = x_copy
             self.best_f = result_copy
         return result
 
     def reset_fevals(self):
-        self.fevals = 0
+        self.__init__(self.func)
