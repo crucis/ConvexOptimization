@@ -18,11 +18,12 @@ class functionObj:
         
         # Autograd ArrayBox behaves differently from numpy, that fixes it.
         if type(result) == np.numpy_boxes.ArrayBox:
-            result_copy = copy(result._value)
+            result_copy = copy(result._value if not hasattr(result._value, '__iter__') \
+                                                else result._value[0])
         else:
             result_copy = copy(result)
         if type(x) == np.numpy_boxes.ArrayBox:
-            x_copy = x._value
+            x_copy = x._value if not hasattr(x._value, '__iter__') else x._value[0]
         else:
             x_copy = x
         
