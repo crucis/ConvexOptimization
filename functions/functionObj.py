@@ -12,11 +12,18 @@ class functionObj:
         self.all_x = []
         self._grad = grad(self.func)
 
+
     def __call__(self, x, save_eval = True):
+        if type(x) == int:
+            x = float(x)
+        elif hasattr(x, '__iter__'):
+            x = np.array(x, dtype = np.float64)
+            
         if not save_eval:
             return self.func(x)
         result = self.func(x)
         return self._update_params(x, result)
+
 
     def reset_fevals(self):
         self.__init__(self.func)
@@ -25,6 +32,9 @@ class functionObj:
     def grad(self, x, save_eval = True):
         if type(x) == int:
             x = float(x)
+        elif hasattr(x, '__iter__'):
+            x = np.array(x, dtype = np.float64)
+        
         if not save_eval:
             return self._grad(x)
         result = self._grad(x)
@@ -44,11 +54,17 @@ class functionObj:
             x_copy = x._value if not hasattr(x._value, '__iter__') else x._value[0]
         else:
             x_copy = x
-        
+
         assert np.isnan(result_copy).all() == False, "X out of domain"
+
         self.all_evals += [result_copy]
         self.all_x += [x_copy]
-        if result_copy < self.best_f:
+        if hasattr(result_copy, '__iter__') or hasattr(self.best_f, '__iter__'):
+            found_best = (result_copy <= self.best_f).all()
+        else:
+            found_best = result_copy < self.best_f 
+
+        if found_best:
             self.best_x = x_copy
             self.best_f = result_copy
         return result
