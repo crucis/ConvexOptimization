@@ -3,9 +3,9 @@ import autograd.numpy as np
 from copy import copy
 
 class CubicInterpolation(optimizer):
-    def __init__(self, func, initial_xs, maxIter = 1e3, xtol = 1e-6, ftol = 1e-6, interval = [-100, 100]):
+    def __init__(self, func, maxIter = 1e3, xtol = 1e-6, ftol = 1e-6, interval = [-100, 100]):
         super().__init__(func = func, maxIter = maxIter, xtol = xtol, ftol = ftol, interval = interval)
-        self.initial_x = initial_xs
+        self.initial_x = np.array([interval[0], (interval[0]+interval[1])/2, interval[1]])
 
     
     def find_min(self):
