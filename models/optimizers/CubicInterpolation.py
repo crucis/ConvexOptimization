@@ -1,19 +1,17 @@
 from .optimizer import optimizer
 import autograd.numpy as np
-from autograd import grad
 from copy import copy
 
 class CubicInterpolation(optimizer):
     def __init__(self, func, initial_xs, maxIter = 1e3, xtol = 1e-6, ftol = 1e-6, interval = [-100, 100]):
         super().__init__(func = func, maxIter = maxIter, xtol = xtol, ftol = ftol, interval = interval)
         self.initial_x = initial_xs
-        self.grad_func = grad(self.objectiveFunction)
 
     
     def find_min(self):
         self.x = np.array(self.initial_x, dtype=np.float64)
         self.x_oldmean = np.inf
-        self.grad_f_1 = self.grad_func(self.x[0])
+        self.grad_f_1 = self.objectiveFunction.grad(self.x[0])
         self.f = np.array([self.objectiveFunction(y) for y in self.x])
 
         for _ in range(self.maxIter):
@@ -35,7 +33,7 @@ class CubicInterpolation(optimizer):
             self.x[best_index] = copy(self.x_mean)
             self.f[best_index] = copy(self.f_mean)
             if best_index == 0:
-                self.grad_f_1 = self.grad_func(self.x_mean)
+                self.grad_f_1 = self.objectiveFunction.grad(self.x_mean)
 
         return self.x_mean
 
