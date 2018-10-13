@@ -32,13 +32,11 @@ class DaviesSwannCampey(optimizer):
 
             # step 3
             if self.f[0] > self.f[1]:
-                #print('X[0]: %f, F[0]: %f, f[1]: %f'%(self.x[0], self.f[0], self.f[1]))
                 self.p = 1
                 # step 4
                 self._compute_new_f()
             else: # f[0] <= f[1]
                 self.f_left = self.objectiveFunction(self.x_left)
-                #print('X[0]: %f, F[-1]: %f F[0]: %f, f[1]: %f'%(self.x[0], self.f_left, self.f[0], self.f[1]))
                 if self.f_left < self.f[0]:
                     self.p = -1 
                     # step 4
