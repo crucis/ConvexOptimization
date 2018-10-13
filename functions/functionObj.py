@@ -1,4 +1,5 @@
 import autograd.numpy as np
+from autograd import grad
 from copy import copy
 
 class functionObj:
@@ -9,12 +10,29 @@ class functionObj:
         self.best_f = np.inf
         self.all_evals = []
         self.all_x = []
+        self._grad = grad(self.func)
 
     def __call__(self, x, save_eval = True):
         if not save_eval:
             return self.func(x)
-        self.fevals = self.fevals + 1
         result = self.func(x)
+        return self._update_params(x, result)
+
+    def reset_fevals(self):
+        self.__init__(self.func)
+
+
+    def grad(self, x, save_eval = True):
+        if type(x) == int:
+            x = float(x)
+        if not save_eval:
+            return self._grad(x)
+        result = self._grad(x)
+        return self._update_params(x, result)
+
+
+    def _update_params(self, x, result):
+        self.fevals = self.fevals + 1
         
         # Autograd ArrayBox behaves differently from numpy, that fixes it.
         if type(result) == np.numpy_boxes.ArrayBox:
@@ -30,10 +48,7 @@ class functionObj:
         assert np.isnan(result_copy).all() == False, "X out of domain"
         self.all_evals += [result_copy]
         self.all_x += [x_copy]
-        if (result_copy < self.best_f).any():
+        if result_copy < self.best_f:
             self.best_x = x_copy
             self.best_f = result_copy
         return result
-
-    def reset_fevals(self):
-        self.__init__(self.func)
