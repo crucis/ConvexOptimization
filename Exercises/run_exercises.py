@@ -59,7 +59,7 @@ def run_exercise(func, f_string, interval, plot_func = True, seed = 32, epsilon 
     DichotomousSearch(f_x_DS, epsilon = epsilon/10, interval = interval, xtol = epsilon).find_min()
     timings.append(time.process_time())
     FibonacciSearch(f_x_FBS, interval = interval, xtol = epsilon).find_min()
-    timings.append(time.clock())
+    timings.append(time.process_time())
 
     GoldenSectionSearch(f_x_GSS, interval = interval, xtol = epsilon).find_min()
     timings.append(time.process_time())
