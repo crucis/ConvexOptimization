@@ -62,7 +62,7 @@ class InexactLineSearch(optimizer):
             grad_x = copy(self.objectiveFunction.grad(self.x_k))
             if np.linalg.norm(grad_x) <= self.xtol:
                 break
-            #self.direction_vector = copy(-grad_x)
+            self.direction_vector = copy(-grad_x)
             yield self.x_k, self.a0, self.direction_vector
 
 
