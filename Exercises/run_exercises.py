@@ -65,8 +65,7 @@ def run_exercise(func, f_string, interval, plot_func = True, seed = 32, epsilon 
     timings.append(time.process_time())
     QuadraticInterpolationSearch(f_x_QIM, interval = interval, xtol = epsilon).find_min()
     timings.append(time.process_time())
-    CubicInterpolation(f_x_CIM, initial_xs = np.random.uniform(interval[0], interval[1], size=3), interval = interval, 
-                       xtol = epsilon).find_min()
+    CubicInterpolation(f_x_CIM, interval = interval, xtol = epsilon).find_min()
     timings.append(time.process_time())
     DaviesSwannCampey(f_x_DSC, x_0 = np.random.uniform(interval[0], interval[1], size=1), 
                       interval = interval, xtol = epsilon).find_min()
