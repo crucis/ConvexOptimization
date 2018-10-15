@@ -38,7 +38,7 @@ class functionObj:
         if not save_eval:
             return self._grad(x)
         result = self._grad(x)
-        return self._update_params(x, result)
+        return result
 
 
     def _update_params(self, x, result):
