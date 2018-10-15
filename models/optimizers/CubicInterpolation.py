@@ -77,7 +77,7 @@ class CubicInterpolation(optimizer):
     
     def _get_extremum_points(self):
         positive_result = (1/(3*self.a_3)) * (-self.a_2 + np.sqrt(self.a_2**2 - 3*self.a_1*self.a_3))
-        negative_result = (1/(3*self.a_3)) * (-self.a_2 + np.sqrt(self.a_2**2 + 3*self.a_1*self.a_3))
+        negative_result = (1/(3*self.a_3)) * (-self.a_2 - np.sqrt(self.a_2**2 - 3*self.a_1*self.a_3))
         return (positive_result, negative_result)
 
 
@@ -91,4 +91,4 @@ class CubicInterpolation(optimizer):
         elif second_result > a_2_a_3:
             return second_result
         else:
-            return first_result
+            return first_result if first_result > 0 else second_result

@@ -38,6 +38,6 @@ class BacktrackingLineSearch(optimizer):
     def _backtracking_line_search(self, grad_x):
             f_x = self.objectiveFunction(self.x)
             f_x_tdeltax = self.objectiveFunction(self.x + self.t * self.delta_x)
-            while f_x_tdeltax  >  f_x + self.alpha*self.t*np.transpose(grad_x)*self.delta_x:
+            while f_x_tdeltax  >  f_x + self.alpha*self.t*(np.transpose(grad_x) @ self.delta_x):
                 self.t = self.beta * self.t
                 f_x_tdeltax = self.objectiveFunction(self.x + self.t * self.delta_x)
