@@ -78,7 +78,8 @@ class InexactLineSearch(optimizer):
         self.f_L = self.objectiveFunction(self.x_k + self.alpha_L * self.direction_vector)
         gk = self.objectiveFunction.grad(self.x_k + self.alpha * self.direction_vector)
         self.grad_f_L = gk * self.direction_vector if not hasattr(gk, '__iter__') \
-                                                    else (np.transpose(gk[:, np.newaxis]) * self.direction_vector).flatten()
+                                                    else (np.transpose(gk[:, np.newaxis]) @ self.direction_vector).flatten()
+        old_grad_f_L = copy(self.grad_f_L )
         self.norm_grad_f_L = np.linalg.norm(self.grad_f_L)
 
         # step 3
@@ -111,7 +112,7 @@ class InexactLineSearch(optimizer):
                 # step 6
                 gk = self.objectiveFunction.grad(self.x_k + self.a0 * self.direction_vector)
                 self.grad_f0 = gk * self.direction_vector if not hasattr(gk, '__iter__') \
-                                                            else (np.transpose(gk[:, np.newaxis]) * self.direction_vector).flatten()
+                                                            else (np.transpose(gk[:, np.newaxis]) @ self.direction_vector).flatten()
                 self.norm_grad_f0 = np.linalg.norm(self.grad_f0)
                 # step 7
                 if self.norm_grad_f0 < self.sigma * self.norm_grad_f_L:
@@ -121,12 +122,17 @@ class InexactLineSearch(optimizer):
                     if self.delta_a0 > self.chi * (self.a0 - self.alpha_L):
                         self.delta_a0 = self.chi * (self.a0 - self.alpha_L)
                     self.a0tilde = self.a0 + self.delta_a0
-                    self.alpha_L = self.a0
-                    self.a0 = self.a0tilde
-                    self.f_L = self.f0
-                    self.grad_f_L = self.grad_f0
-                    self.norm_grad_f_L = self.norm_grad_f0
+                    self.alpha_L = copy(self.a0)
+                    self.a0 = copy(self.a0tilde)
+                    self.f_L = copy(self.f0)
+                    self.grad_f_L = copy(self.grad_f0)
+                    self.norm_grad_f_L = copy(self.norm_grad_f0)
                     entered_step7 = True
+            # step 8
             if (not entered_step5) and (not entered_step7):
                 break
+            # new stuff
+            if f0 > delta_f0 + 0.3*self.a0*(np.transpose(old_grad_f_L)@self.direction_vector):
+                break
+
         return self.a0, self.f0
