@@ -2,6 +2,8 @@ import sys
 if '..' not in sys.path:
     sys.path.append('..')
 import matplotlib.pyplot as plt
+from matplotlib import cm
+from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import pandas as pd
 import time
@@ -9,11 +11,11 @@ from copy import copy
 import operator
 
 from scipy.optimize import brute
-from functions import order5_polynomial, logarithmic, sinoid
+from functions import order5_polynomial, logarithmic, sinoid, order4_polynomial
 from functions import functionObj
 from models.optimizers import DichotomousSearch, FibonacciSearch, GoldenSectionSearch, \
                                 QuadraticInterpolationSearch, CubicInterpolation, DaviesSwannCampey, \
-                                BacktrackingLineSearch
+                                BacktrackingLineSearch, InexactLineSearch
                                 
 def run_exercise(func, f_string, interval, plot_func = True, seed = 32, epsilon = 1e-5, textpos = (3,5)):
     all_fx_names = ['Brute Force', 
@@ -90,3 +92,64 @@ def run_exercise(func, f_string, interval, plot_func = True, seed = 32, epsilon 
                                   else np.array(x).flatten())
     df['run_time (s)'] = timings
     return df
+
+
+def plot_surface():
+    func = functionObj(order4_polynomial)
+    x1_region = [-np.pi, np.pi]
+    x2_region = [-np.pi, np.pi]
+
+    x1 = np.linspace(*x1_region)
+    x2 = np.linspace(*x2_region)
+
+    xx, yy = np.meshgrid(x1, x2)
+
+    z = func([xx, yy], save_eval=False)
+    fig = plt.figure()
+    fig.set_figheight(8)
+    fig.set_figwidth(12)
+    ax = Axes3D(fig)
+    ax.set_xlabel('$x_0$')
+    ax.set_ylabel('$x_1$')
+    ax.set_zlabel('$f(\mathbf{x})$')
+    img = ax.plot_surface(xx, yy, z, cmap = cm.viridis, alpha = 0.9)
+    ax.contour(xx, yy, z, cmap = cm.viridis, linestyles = "solid", offset = -40)
+    plt.colorbar(img)
+    plt.show()
+
+def plot_contour(result_x):
+    func = functionObj(order4_polynomial)
+    x1_region = [-np.pi, np.pi]
+    x2_region = [-np.pi, np.pi]
+
+    x1 = np.linspace(*x1_region)
+    x2 = np.linspace(*x2_region)
+
+    xx, yy = np.meshgrid(x1, x2)
+
+    z = func([xx, yy], save_eval=False)
+    fig, ax = plt.subplots()
+    fig.set_figheight(8)
+    fig.set_figwidth(12)
+    ax.set_xlabel('$x_0$')
+    ax.set_ylabel('$x_1$')
+    img = ax.contour(xx, yy, z, cmap = cm.viridis, linestyles = "solid", offset = -40)
+    ax.clabel(img, inline=1, fontsize=10)
+    ax.plot(result_x[0], result_x[1], 'r+', label="Fletcher's inexact line search solution.")
+    ax.set_title('Contour plot')
+    plt.legend()
+    plt.show()
+
+def plot_func_alpha(x_0, d_0, alpha, fletcher_alpha, fletcher_f):
+    func = functionObj(order4_polynomial)
+    fig, ax = plt.subplots()
+    fig.set_figheight(8)
+    fig.set_figwidth(12)
+    ax.set_xlabel(r'$\alpha$')
+    ax.set_ylabel(r'$f(\mathbf{x}_0+\alpha \mathbf{d}_0)$')
+    z = x_0 + alpha[:, np.newaxis]@np.array(d_0)[:,np.newaxis].T
+    f = func(z.T, save_eval=False)
+    ax.plot(alpha, f, label=r"$f(\mathbf{x}_0 + \alpha\mathbf{d}_0)$")
+    ax.plot(fletcher_alpha, fletcher_f, 'r+', label="Fletcher's inexact line search solution.")
+    plt.legend()
+    plt.show()
