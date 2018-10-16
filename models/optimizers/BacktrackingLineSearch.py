@@ -6,6 +6,7 @@ from copy import copy
 class BacktrackingLineSearch(optimizer):
     def __init__(self, func, 
                         initial_x,
+                        delta_x = None,
                         alpha = 0.3, 
                         beta = 0.5,
                         interval = [-100, 100],
@@ -20,24 +21,29 @@ class BacktrackingLineSearch(optimizer):
         self.beta = beta
         self.t = 1
         self.x = initial_x
+        self.delta_x = delta_x
 
     
     def find_min(self):
         grad_x = copy(self.objectiveFunction.grad(self.x))
+        if (self.delta_x is None) or (self.objectiveFunction.best_x < np.inf):
+            self.delta_x = copy(-grad_x)
+
         for _ in range(self.maxIter):
             self.t = 1
-            self.delta_x = copy(-grad_x)
             self._backtracking_line_search(grad_x)
             self.x = self.x + self.t * self.delta_x
             grad_x = copy(self.objectiveFunction.grad(self.x))
             if np.linalg.norm(grad_x) <= self.xtol:
                 break
+            self.delta_x = copy(-grad_x)
         return self.x
 
 
     def _backtracking_line_search(self, grad_x):
-            f_x = self.objectiveFunction(self.x)
+        f_x = self.objectiveFunction(self.x)
+        f_x_tdeltax = self.objectiveFunction(self.x + self.t * self.delta_x)
+        while f_x_tdeltax  >  f_x + self.alpha*self.t*(np.transpose(grad_x) @ self.delta_x):
+            self.t = self.beta * self.t
             f_x_tdeltax = self.objectiveFunction(self.x + self.t * self.delta_x)
-            while f_x_tdeltax  >  f_x + self.alpha*self.t*(np.transpose(grad_x) @ self.delta_x):
-                self.t = self.beta * self.t
-                f_x_tdeltax = self.objectiveFunction(self.x + self.t * self.delta_x)
+        return self.t, f_x_tdeltax
