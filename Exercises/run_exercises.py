@@ -117,7 +117,7 @@ def plot_surface():
     plt.colorbar(img)
     plt.show()
 
-def plot_contour(result_x):
+def plot_contour(result_fletcher = None, result_back = None):
     func = functionObj(order4_polynomial)
     x1_region = [-np.pi, np.pi]
     x2_region = [-np.pi, np.pi]
@@ -131,16 +131,19 @@ def plot_contour(result_x):
     fig, ax = plt.subplots()
     fig.set_figheight(8)
     fig.set_figwidth(12)
-    ax.set_xlabel('$x_0$')
-    ax.set_ylabel('$x_1$')
+    ax.set_xlabel(r'$x_0$')
+    ax.set_ylabel(r'$x_1$')
     img = ax.contour(xx, yy, z, cmap = cm.viridis, linestyles = "solid", offset = -40)
     ax.clabel(img, inline=1, fontsize=10)
-    ax.plot(result_x[0], result_x[1], 'r+', label="Fletcher's inexact line search solution.")
+    if result_fletcher is not None:
+        ax.plot(result_fletcher[0], result_fletcher[1], 'r+', label="Fletcher's inexact line search solution.")
+    if result_back is not None:
+        ax.plot(result_back[0], result_back[1], 'ko', label="Backtracking inexact line search solution.")
     ax.set_title('Contour plot')
     plt.legend()
     plt.show()
 
-def plot_func_alpha(x_0, d_0, alpha, fletcher_alpha, fletcher_f):
+def plot_func_alpha(x_0, d_0, alpha, fletcher_alpha, fletcher_f, back_alpha, back_f):
     func = functionObj(order4_polynomial)
     fig, ax = plt.subplots()
     fig.set_figheight(8)
@@ -151,5 +154,6 @@ def plot_func_alpha(x_0, d_0, alpha, fletcher_alpha, fletcher_f):
     f = func(z.T, save_eval=False)
     ax.plot(alpha, f, label=r"$f(\mathbf{x}_0 + \alpha\mathbf{d}_0)$")
     ax.plot(fletcher_alpha, fletcher_f, 'r+', label="Fletcher's inexact line search solution.")
+    ax.plot(back_alpha, back_f, 'ko', label="Backtracking inexact line search solution.")
     plt.legend()
     plt.show()
