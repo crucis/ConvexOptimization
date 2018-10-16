@@ -1,5 +1,5 @@
 from .optimizer import optimizer
-from autograd import grad
+from autograd import grad, hessian
 import autograd.numpy as np
 from copy import copy
 
@@ -30,6 +30,8 @@ class InexactLineSearch(optimizer):
         if type(d_0) == list:
             d_0 = np.array(d_0, dtype=np.float64)
         self.direction_vector = d_0
+        self.alpha_L = self.interval[0]
+        self.alpha_U = self.interval[1]
 
     
     def find_min(self):
@@ -46,7 +48,7 @@ class InexactLineSearch(optimizer):
             if np.linalg.norm(grad_x) <= self.xtol:
                 break
             self.direction_vector = copy(-grad_x)
-        return self.x_k
+        return self.x_k, self.a0
 
 
     def find_min_iterator(self):
@@ -63,7 +65,7 @@ class InexactLineSearch(optimizer):
             if np.linalg.norm(grad_x) <= self.xtol:
                 break
             self.direction_vector = copy(-grad_x)
-            yield self.x_k, self.a0, self.direction_vector
+            yield self.x_k
 
 
     def _compute_a0tilde(self):
@@ -74,22 +76,23 @@ class InexactLineSearch(optimizer):
     def _line_search(self):
         # step 2
         self.f0 = self.objectiveFunction(self.x_k)
+        g0 = self.objectiveFunction.grad(self.x_k)
         delta_f0 = copy(self.f0)
         self.f_L = self.objectiveFunction(self.x_k + self.alpha_L * self.direction_vector)
-        gk = self.objectiveFunction.grad(self.x_k + self.alpha * self.direction_vector)
-        self.grad_f_L = gk * self.direction_vector if not hasattr(gk, '__iter__') \
-                                                    else (np.transpose(gk[:, np.newaxis]) @ self.direction_vector).flatten()
+        gL = self.objectiveFunction.grad(self.x_k + self.alpha_L * self.direction_vector)
+        self.grad_f_L = gL * self.direction_vector if not hasattr(gL, '__iter__') \
+                                                    else (np.transpose(gL) @ self.direction_vector).flatten()
         old_grad_f_L = copy(self.grad_f_L )
         self.norm_grad_f_L = np.linalg.norm(self.grad_f_L)
 
         # step 3
-        if self.norm_grad_f_L > self.xtol:
-            self.a0 = -2*delta_f0 / self.norm_grad_f_L
-        else:
-            self.a0 = 1
-        if (self.a0 <= self.xtol) or (self.a0 > 1):
-            self.a0 = 1
-        
+        H = hessian(self.objectiveFunction)(self.x_k)
+        self.a0 = np.linalg.norm(g0)/(g0.T@H@g0)
+        if self.a0 > self.alpha_U:
+            self.a0 = self.alpha_U
+        if self.a0 < self.alpha_L:
+            self.a0 = self.alpha_L
+
         # step 4
         for _ in range(self.maxIter):
             self.f0 = self.objectiveFunction(self.x_k + self.a0 * self.direction_vector)
@@ -112,7 +115,7 @@ class InexactLineSearch(optimizer):
                 # step 6
                 gk = self.objectiveFunction.grad(self.x_k + self.a0 * self.direction_vector)
                 self.grad_f0 = gk * self.direction_vector if not hasattr(gk, '__iter__') \
-                                                            else (np.transpose(gk[:, np.newaxis]) @ self.direction_vector).flatten()
+                                                            else (np.transpose(gk) @ self.direction_vector).flatten()
                 self.norm_grad_f0 = np.linalg.norm(self.grad_f0)
                 # step 7
                 if self.norm_grad_f0 < self.sigma * self.norm_grad_f_L:
@@ -132,7 +135,7 @@ class InexactLineSearch(optimizer):
             if (not entered_step5) and (not entered_step7):
                 break
             # new stuff
-            if f0 > delta_f0 + 0.3*self.a0*(np.transpose(old_grad_f_L)@self.direction_vector):
-                break
+            #if self.f0 > delta_f0 + 0.3*self.a0*old_grad_f_L*np.linalg.norm(self.direction_vector):
+            #    break
 
         return self.a0, self.f0
