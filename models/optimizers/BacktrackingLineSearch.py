@@ -7,7 +7,7 @@ class BacktrackingLineSearch(optimizer):
     def __init__(self, func, 
                         initial_x,
                         delta_x = None,
-                        alpha = 0.3, 
+                        alpha = 0.49999, 
                         beta = 0.5,
                         interval = [-100, 100],
                         maxIter = 1e6, 
