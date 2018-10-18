@@ -6,10 +6,10 @@ from copy import copy
 
 class InexactLineSearch(optimizer):
     def __init__(self, func, 
-                    x_k, 
+                    x_0, 
                     d_0 = None,
                     rho = 0.1,
-                    sigma = 0.7,
+                    sigma = 0.1,
                     tau = 0.1,
                     chi = 9,
                     interval = [0, np.inf],
@@ -18,17 +18,21 @@ class InexactLineSearch(optimizer):
                     ftol = 1e-6):
         super().__init__(func = func, maxIter = maxIter, xtol = xtol, ftol = ftol, interval=interval)
         assert (rho >= 0) and (rho < 0.5), 'Rho must be in the range [0,0.5)'
+
         self.rho = rho
         self.sigma = sigma
         self.tau = tau
         self.chi = chi
-        if type(x_k) == list:
-            self.x_k = np.array(x_k, dtype=np.float64)
+        if type(x_0) == list:
+            self.x_k = np.array(x_0, dtype=np.float64)
         else:
-            self.x_k = x_k
+            self.x_k = x_0
         self.alpha = self.interval[0]
         if type(d_0) == list:
             d_0 = np.array(d_0, dtype=np.float64)
+        
+        assert (d_0 is None) or (x_0.shape == d_0.shape), "x_0 and d_0 must have the same dimensions."
+        
         self.direction_vector = d_0
         self.alpha_L = self.interval[0]
         self.alpha_U = self.interval[1]
@@ -69,38 +73,30 @@ class InexactLineSearch(optimizer):
 
 
     def _compute_a0tilde(self):
-        numerator = (self.a0 - self.alpha_L)**2 * self.norm_grad_f_L
-        denominator = 2*(self.f_L - self.f0 + (self.a0 - self.alpha_L) * self.norm_grad_f_L)
+        numerator = (self.a0 - self.alpha_L)**2 * self.grad_f_L
+        denominator = 2*(self.f_L - self.f0 + (self.a0 - self.alpha_L) * self.grad_f_L)
         return self.alpha_L + numerator/denominator
 
     def _line_search(self):
         # step 2
-        self.f0 = self.objectiveFunction(self.x_k)
-        g0 = self.objectiveFunction.grad(self.x_k)
-        delta_f0 = copy(self.f0)
         self.f_L = self.objectiveFunction(self.x_k + self.alpha_L * self.direction_vector)
         gL = self.objectiveFunction.grad(self.x_k + self.alpha_L * self.direction_vector)
-        self.grad_f_L = gL * self.direction_vector if not hasattr(gL, '__iter__') \
-                                                    else (np.transpose(gL) @ self.direction_vector).flatten()
-        old_grad_f_L = copy(self.grad_f_L )
-        self.norm_grad_f_L = np.linalg.norm(self.grad_f_L)
+        self.grad_f_L = (np.transpose(gL) @ self.direction_vector)
 
         # step 3
         H = hessian(self.objectiveFunction)(self.x_k)
-        self.a0 = np.linalg.norm(g0)/(g0.T@H@g0)
+        g0 = self.objectiveFunction.grad(self.x_k)
+        self.a0 = (np.transpose(g0) @ g0)/(np.transpose(g0) @ H @ g0)
         if self.a0 > self.alpha_U:
             self.a0 = self.alpha_U
         if self.a0 < self.alpha_L:
             self.a0 = self.alpha_L
-
+            
         # step 4
         for _ in range(self.maxIter):
             self.f0 = self.objectiveFunction(self.x_k + self.a0 * self.direction_vector)
-            entered_step5 = False
-            entered_step7 = False
-
-            # step 5
-            if self.f0 > self.f_L + self.rho*(self.a0 - self.alpha_L) * self.norm_grad_f_L:
+            # step 5 Interpolation
+            if self.f0 > self.f_L + self.rho*(self.a0 - self.alpha_L) * self.grad_f_L:
                 if self.a0 < self.alpha_U:
                     self.alpha_U = self.a0
                 self.a0tilde = self._compute_a0tilde()
@@ -109,33 +105,28 @@ class InexactLineSearch(optimizer):
                 if self.a0tilde > self.alpha_U - self.tau * (self.alpha_U - self.alpha_L):
                     self.a0tilde = self.alpha_U - self.tau * (self.alpha_U - self.alpha_L)
                 self.a0 = self.a0tilde
-                entered_step5 = True
 
-            if not entered_step5:
+            else:
                 # step 6
                 gk = self.objectiveFunction.grad(self.x_k + self.a0 * self.direction_vector)
-                self.grad_f0 = gk * self.direction_vector if not hasattr(gk, '__iter__') \
-                                                            else (np.transpose(gk) @ self.direction_vector).flatten()
-                self.norm_grad_f0 = np.linalg.norm(self.grad_f0)
-                # step 7
-                if self.norm_grad_f0 < self.sigma * self.norm_grad_f_L:
-                    self.delta_a0 = ((self.a0 - self.alpha_L) * self.norm_grad_f0 ) / (self.norm_grad_f_L - self.norm_grad_f0)
+                self.grad_f0 = (np.transpose(gk) @ self.direction_vector)
+                # step 7 Extrapolation
+                if self.grad_f0 < self.sigma * self.grad_f_L:
+                    self.delta_a0 = ((self.a0 - self.alpha_L) * self.grad_f0 ) / (self.grad_f_L - self.grad_f0)
                     if self.delta_a0 < self.tau * (self.a0 - self.alpha_L):
                         self.delta_a0 = self.tau * (self.a0 - self.alpha_L)
                     if self.delta_a0 > self.chi * (self.a0 - self.alpha_L):
                         self.delta_a0 = self.chi * (self.a0 - self.alpha_L)
+                    if self.delta_a0 <= 1e-4: #
+                        self.delta_a0 = self.a0 #
                     self.a0tilde = self.a0 + self.delta_a0
+
+                    # Prepare next iteration
                     self.alpha_L = copy(self.a0)
                     self.a0 = copy(self.a0tilde)
                     self.f_L = copy(self.f0)
                     self.grad_f_L = copy(self.grad_f0)
-                    self.norm_grad_f_L = copy(self.norm_grad_f0)
-                    entered_step7 = True
             # step 8
-            if (not entered_step5) and (not entered_step7):
-                break
-            # new stuff
-            #if self.f0 > delta_f0 + 0.3*self.a0*old_grad_f_L*np.linalg.norm(self.direction_vector):
-            #    break
-
+                else:
+                    break
         return self.a0, self.f0
