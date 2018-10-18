@@ -106,16 +106,19 @@ def plot_surface():
 
     z = func([xx, yy], save_eval=False)
     fig = plt.figure()
-    fig.set_figheight(8)
-    fig.set_figwidth(12)
+    fig.set_figheight(5)
+    fig.set_figwidth(8)
     ax = Axes3D(fig)
     ax.set_xlabel('$x_0$')
     ax.set_ylabel('$x_1$')
     ax.set_zlabel('$f(\mathbf{x})$')
     img = ax.plot_surface(xx, yy, z, cmap = cm.viridis, alpha = 0.9)
     ax.contour(xx, yy, z, cmap = cm.viridis, linestyles = "solid", offset = -40)
+    plt.subplots_adjust(left=0.0, bottom=0.0, right=1.0, top=1.0, wspace=None,
+                        hspace=None)
     plt.colorbar(img)
-    plt.show()
+    #plt.show()
+    plt.savefig('demo.png', orietantion = 'portrait', pbox_inches = 'tight')
 
 def plot_contour(result_fletcher = None, result_back = None):
     func = functionObj(order4_polynomial)
@@ -133,14 +136,15 @@ def plot_contour(result_fletcher = None, result_back = None):
     fig.set_figwidth(12)
     ax.set_xlabel(r'$x_0$')
     ax.set_ylabel(r'$x_1$')
-    img = ax.contour(xx, yy, z, cmap = cm.viridis, linestyles = "solid", offset = -40)
+    img = ax.contour(xx, yy, z, cmap = cm.viridis, linestyles = "solid")
     ax.clabel(img, inline=1, fontsize=10)
     if result_fletcher is not None:
         ax.plot(result_fletcher[0], result_fletcher[1], 'r+', label="Fletcher's inexact line search solution.")
     if result_back is not None:
         ax.plot(result_back[0], result_back[1], 'ko', label="Backtracking inexact line search solution.")
     ax.set_title('Contour plot')
-    plt.legend()
+    if (result_back is not None) or (result_fletcher is not None):
+        plt.legend()
     plt.show()
 
 def plot_func_alpha(x_0, d_0, alpha, fletcher_alpha, fletcher_f, back_alpha, back_f):
