@@ -45,14 +45,16 @@ class InexactLineSearch(optimizer):
         if self.direction_vector is None:
             self.direction_vector = copy(-grad_x)
         for _ in range(self.maxIter):
-            self.a0 = 1
-            self._line_search()
-            self.x_k = self.x_k + self.a0* self.direction_vector
+            print('direction_vector ', self.direction_vector)
+            a0, _  = self._line_search()
+            self.x_k = self.x_k + a0* self.direction_vector
+            print('x_k ', self.x_k)
             grad_x = copy(self.objectiveFunction.grad(self.x_k))
             if np.linalg.norm(grad_x) <= self.xtol:
                 break
-            self.direction_vector = copy(-grad_x)
-        return self.x_k, self.a0
+            self.direction_vector = copy(-grad_x/np.linalg.norm(grad_x))
+            print('a0 ', a0)
+        return self.x_k, a0
 
 
     def find_min_iterator(self):
@@ -62,9 +64,8 @@ class InexactLineSearch(optimizer):
         if self.direction_vector is None:
             self.direction_vector = copy(-grad_x)
         for _ in range(self.maxIter):
-            self.a0 = 1
-            self._line_search()
-            self.x_k = self.x_k + self.a0* self.direction_vector
+            a0, _ = self._line_search()
+            self.x_k = self.x_k + a0* self.direction_vector
             grad_x = copy(self.objectiveFunction.grad(self.x_k))
             if np.linalg.norm(grad_x) <= self.xtol:
                 break
@@ -72,61 +73,61 @@ class InexactLineSearch(optimizer):
             yield self.x_k
 
 
-    def _compute_a0tilde(self):
-        numerator = (self.a0 - self.alpha_L)**2 * self.grad_f_L
-        denominator = 2*(self.f_L - self.f0 + (self.a0 - self.alpha_L) * self.grad_f_L)
+    def _compute_a0tilde(self, a0, f0, f_L, grad_f_L):
+        numerator = (a0 - self.alpha_L)**2 * grad_f_L
+        denominator = 2*(f_L - f0 + (a0 - self.alpha_L) * grad_f_L)
         return self.alpha_L + numerator/denominator
 
     def _line_search(self):
         # step 2
-        self.f_L = self.objectiveFunction(self.x_k + self.alpha_L * self.direction_vector)
+        f_L = self.objectiveFunction(self.x_k + self.alpha_L * self.direction_vector)
         gL = self.objectiveFunction.grad(self.x_k + self.alpha_L * self.direction_vector)
-        self.grad_f_L = (np.transpose(gL) @ self.direction_vector)
+        grad_f_L = (np.transpose(gL) @ self.direction_vector)
 
         # step 3
         H = hessian(self.objectiveFunction)(self.x_k)
         g0 = self.objectiveFunction.grad(self.x_k)
-        self.a0 = (np.transpose(g0) @ g0)/(np.transpose(g0) @ H @ g0)
-        if self.a0 > self.alpha_U:
-            self.a0 = self.alpha_U
-        if self.a0 < self.alpha_L:
-            self.a0 = self.alpha_L
+        a0 = (np.transpose(g0) @ g0)/(np.transpose(g0) @ H @ g0)
+        if a0 > self.alpha_U:
+            a0 = self.alpha_U
+        if a0 < self.alpha_L:
+            a0 = self.alpha_L
             
         # step 4
         for _ in range(self.maxIter):
-            self.f0 = self.objectiveFunction(self.x_k + self.a0 * self.direction_vector)
+            f0 = self.objectiveFunction(self.x_k + a0 * self.direction_vector)
             # step 5 Interpolation
-            if self.f0 > self.f_L + self.rho*(self.a0 - self.alpha_L) * self.grad_f_L:
-                if self.a0 < self.alpha_U:
-                    self.alpha_U = self.a0
-                self.a0tilde = self._compute_a0tilde()
-                if self.a0tilde < self.alpha_L + self.tau * (self.alpha_U - self.alpha_L):
-                    self.a0tilde = self.alpha_L + self.tau * (self.alpha_U - self.alpha_L)
-                if self.a0tilde > self.alpha_U - self.tau * (self.alpha_U - self.alpha_L):
-                    self.a0tilde = self.alpha_U - self.tau * (self.alpha_U - self.alpha_L)
-                self.a0 = self.a0tilde
+            if f0 > f_L + self.rho*(a0 - self.alpha_L) * grad_f_L:
+                if a0 < self.alpha_U:
+                    self.alpha_U = a0
+                a0tilde = self._compute_a0tilde(a0, f0, f_L, grad_f_L)
+                if a0tilde < self.alpha_L + self.tau * (self.alpha_U - self.alpha_L):
+                    a0tilde = self.alpha_L + self.tau * (self.alpha_U - self.alpha_L)
+                if a0tilde > self.alpha_U - self.tau * (self.alpha_U - self.alpha_L):
+                    a0tilde = self.alpha_U - self.tau * (self.alpha_U - self.alpha_L)
+                a0 = a0tilde
 
             else:
                 # step 6
-                gk = self.objectiveFunction.grad(self.x_k + self.a0 * self.direction_vector)
+                gk = self.objectiveFunction.grad(self.x_k + a0 * self.direction_vector)
                 self.grad_f0 = (np.transpose(gk) @ self.direction_vector)
                 # step 7 Extrapolation
-                if self.grad_f0 < self.sigma * self.grad_f_L:
-                    self.delta_a0 = ((self.a0 - self.alpha_L) * self.grad_f0 ) / (self.grad_f_L - self.grad_f0)
-                    if self.delta_a0 < self.tau * (self.a0 - self.alpha_L):
-                        self.delta_a0 = self.tau * (self.a0 - self.alpha_L)
-                    if self.delta_a0 > self.chi * (self.a0 - self.alpha_L):
-                        self.delta_a0 = self.chi * (self.a0 - self.alpha_L)
+                if self.grad_f0 < self.sigma * grad_f_L:
+                    self.delta_a0 = ((a0 - self.alpha_L) * self.grad_f0 ) / (grad_f_L - self.grad_f0)
+                    if self.delta_a0 < self.tau * (a0 - self.alpha_L):
+                        self.delta_a0 = self.tau * (a0 - self.alpha_L)
+                    if self.delta_a0 > self.chi * (a0 - self.alpha_L):
+                        self.delta_a0 = self.chi * (a0 - self.alpha_L)
                     if self.delta_a0 <= 1e-4: #
-                        self.delta_a0 = self.a0 #
-                    self.a0tilde = self.a0 + self.delta_a0
+                        self.delta_a0 = a0 #
+                    a0tilde = a0 + self.delta_a0
 
                     # Prepare next iteration
-                    self.alpha_L = copy(self.a0)
-                    self.a0 = copy(self.a0tilde)
-                    self.f_L = copy(self.f0)
-                    self.grad_f_L = copy(self.grad_f0)
+                    self.alpha_L = copy(a0)
+                    a0 = copy(a0tilde)
+                    f_L = copy(f0)
+                    grad_f_L = copy(self.grad_f0)
             # step 8
                 else:
                     break
-        return self.a0, self.f0
+        return a0, f0
