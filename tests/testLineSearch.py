@@ -15,8 +15,8 @@ print(' - Backtracking solution\n   '+ 'alpha'+': %.7f\n   '%alpha_b + '.' + 'f:
 
 func_f = functionObj(order4_polynomial)
 func_b = functionObj(order4_polynomial)
-item_d_optimizer = InexactLineSearch(func, x_0, d_0)
-#backtracking_opt = BacktrackingLineSearch(func, x_0, d_0)
+item_d_optimizer = InexactLineSearch(func_f, x_0, d_0)
+#backtracking_opt = BacktrackingLineSearch(func_b, x_0, d_0)
 item_d_optimizer.find_min()
 #backtracking_opt.find_min
 print('Inexact Line Search Methods for minimization:')
