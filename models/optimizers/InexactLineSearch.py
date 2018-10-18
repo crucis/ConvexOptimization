@@ -45,15 +45,12 @@ class InexactLineSearch(optimizer):
         if self.direction_vector is None:
             self.direction_vector = copy(-grad_x)
         for _ in range(self.maxIter):
-            print('direction_vector ', self.direction_vector)
             a0, _  = self._line_search()
             self.x_k = self.x_k + a0* self.direction_vector
-            print('x_k ', self.x_k)
             grad_x = copy(self.objectiveFunction.grad(self.x_k))
             if np.linalg.norm(grad_x) <= self.xtol:
                 break
             self.direction_vector = copy(-grad_x/np.linalg.norm(grad_x))
-            print('a0 ', a0)
         return self.x_k, a0
 
 
@@ -79,6 +76,8 @@ class InexactLineSearch(optimizer):
         return self.alpha_L + numerator/denominator
 
     def _line_search(self):
+        self.alpha_L = self.interval[0]
+        self.alpha_U = self.interval[1]
         # step 2
         f_L = self.objectiveFunction(self.x_k + self.alpha_L * self.direction_vector)
         gL = self.objectiveFunction.grad(self.x_k + self.alpha_L * self.direction_vector)
