@@ -1,4 +1,5 @@
 from .optimizer import optimizer
+from .SteepestDescentAlgorithm import steepest_descent_algorithm
 from autograd import grad, hessian
 import autograd.numpy as np
 from copy import copy
@@ -38,19 +39,14 @@ class InexactLineSearch(optimizer):
         self.alpha_U = self.interval[1]
 
     
-    def find_min(self):
-        grad_x = copy(self.objectiveFunction.grad(self.x_k))
-        self.alpha_L = self.interval[0]
-        self.alpha_U = self.interval[1]
-        if self.direction_vector is None:
-            self.direction_vector = copy(-grad_x)
-        for _ in range(self.maxIter):
-            a0, _  = self._line_search()
-            self.x_k = self.x_k + a0* self.direction_vector
-            grad_x = copy(self.objectiveFunction.grad(self.x_k))
-            if np.linalg.norm(grad_x) <= self.xtol:
-                break
-            self.direction_vector = copy(-grad_x/np.linalg.norm(grad_x))
+    def find_min(self, method='sda'):
+        if method == 'sda':
+            self.x_k, a0 =  steepest_descent_algorithm(self.x_k, 
+                                                       self.objectiveFunction, 
+                                                       self.interval, 
+                                                       self.maxIter, 
+                                                       self._line_search, 
+                                                       self.xtol)
         return self.x_k, a0
 
 
@@ -75,7 +71,10 @@ class InexactLineSearch(optimizer):
         denominator = 2*(f_L - f0 + (a0 - self.alpha_L) * grad_f_L)
         return self.alpha_L + numerator/denominator
 
-    def _line_search(self):
+    def _line_search(self, dk = None):
+        if self.direction_vector is None:
+            assert dk is not None, "Initial direction must be passed."
+            self.direction_vector = dk
         self.alpha_L = self.interval[0]
         self.alpha_U = self.interval[1]
         # step 2
