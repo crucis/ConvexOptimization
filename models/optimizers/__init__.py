@@ -7,7 +7,7 @@ from .DaviesSwannCampey import DaviesSwannCampey
 from .InexactLineSearch import InexactLineSearch
 from .BacktrackingLineSearch import BacktrackingLineSearch
 from .optimizer import optimizer
-from .SteepestDescentAlgorithm import steepest_descent_algorithm as SteepestDescentAlgorithm
+from .SteepestDescentAlgorithm import SteepestDescentAlgorithm
 
 __all__ = [
     'DichotomousSearch', 
