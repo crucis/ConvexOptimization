@@ -1,5 +1,5 @@
 from .optimizer import optimizer
-from .SteepestDescentAlgorithm import steepest_descent_algorithm
+from .SteepestDescentAlgorithm import _steepest_descent_algorithm
 from autograd import grad, hessian
 import autograd.numpy as np
 from copy import copy
@@ -41,13 +41,13 @@ class InexactLineSearch(optimizer):
     
     def find_min(self, method='sda'):
         if method == 'sda':
-            self.x_k, a0 =  steepest_descent_algorithm(self.x_k, 
+            self.x_k, a0 =  _steepest_descent_algorithm(self.x_k, 
                                                        self.objectiveFunction, 
                                                        self.interval, 
                                                        self.maxIter, 
                                                        self._line_search, 
                                                        self.xtol)
-        return self.x_k, a0
+        return self.x_k
 
 
     def find_min_iterator(self):
