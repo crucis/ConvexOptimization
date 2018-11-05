@@ -3,11 +3,9 @@ import autograd.numpy as np
 from copy import copy
 
 
-def steepest_descent_algorithm(x_0, objectiveFunction, interval, maxIter, line_search=None, xtol=1e-6):
+def _steepest_descent_algorithm(x_0, objectiveFunction, maxIter, line_search=None, xtol=1e-6):
     x_k = copy(x_0)
     grad_x = copy(objectiveFunction.grad(x_k))
-    alpha_L = interval[0]
-    alpha_U = interval[1]
     direction_vector = copy(-grad_x)
     if line_search is None:
         a0 = 1
@@ -28,3 +26,26 @@ def steepest_descent_algorithm(x_0, objectiveFunction, interval, maxIter, line_s
         #direction_vector = copy(-grad_x/np.linalg.norm(grad_x))
     return x_k, a0
 
+class SteepestDescentAlgorithm(optimizer):
+    def __init__(self,
+                 func,
+                 x_0,
+                 line_search_optimizer=None,
+                 maxIter = 1e3,
+                 xtol = 1e-6,
+                 ftol = 1e-6):
+        if hasattr(line_search_optimizer, '_line_search'):
+            self.line_search = line_search_optimizer._line_search
+        else:
+            self.line_search = line_search_optimizer
+        self.objectiveFunction = func
+        self.x_k = x_0
+        super().__init__(func = func, maxIter = maxIter, xtol = xtol, ftol = ftol)
+
+    def find_min(self):
+        self.x_k, a0 = _steepest_descent_algorithm(self.x_k, 
+                                                    self.objectiveFunction, 
+                                                    self.maxIter, 
+                                                    self.line_search, 
+                                                    self.xtol)
+        return self.x_k
