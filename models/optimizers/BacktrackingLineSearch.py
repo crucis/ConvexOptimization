@@ -47,12 +47,12 @@ class BacktrackingLineSearch(optimizer):
         return self.x
 
 
-    def _line_search(self, dk):
+    def _line_search(self, x, dk):
         delta_x = dk
         grad_x = copy(-dk)
-        f_x = self.objectiveFunction(self.x)
-        f_x_tdeltax = self.objectiveFunction(self.x + self.t * delta_x)
+        f_x = self.objectiveFunction(x)
+        f_x_tdeltax = self.objectiveFunction(x + self.t * delta_x)
         while f_x_tdeltax  >  f_x + self.alpha*self.t*(np.transpose(grad_x) @ delta_x):
             self.t = self.beta * self.t
-            f_x_tdeltax = self.objectiveFunction(self.x + self.t * delta_x)
+            f_x_tdeltax = self.objectiveFunction(x + self.t * delta_x)
         return self.t, f_x_tdeltax
