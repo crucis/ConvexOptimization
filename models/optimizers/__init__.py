@@ -1,3 +1,4 @@
+from .optimizer import optimizer
 from .DichotomousSearch import DichotomousSearch
 from .FibonacciSearch import FibonacciSearch
 from .GoldenSectionSearch import GoldenSectionSearch
@@ -6,10 +7,11 @@ from .CubicInterpolation import CubicInterpolation
 from .DaviesSwannCampey import DaviesSwannCampey
 from .InexactLineSearch import InexactLineSearch
 from .BacktrackingLineSearch import BacktrackingLineSearch
-from .optimizer import optimizer
 from .SteepestDescentAlgorithm import SteepestDescentAlgorithm
+from .BasicNewtonAlgorithm import BasicNewtonAlgorithm
 
 __all__ = [
+    'optimizer',
     'DichotomousSearch', 
     'FibonacciSearch', 
     'GoldenSectionSearch', 
@@ -18,5 +20,5 @@ __all__ = [
     'DaviesSwannCampey',
     'InexactLineSearch',
     'BacktrackingLineSearch',
-    'optimizer',
-    'SteepestDescentAlgorithm']
+    'SteepestDescentAlgorithm',
+    'BasicNewtonAlgorithm']
