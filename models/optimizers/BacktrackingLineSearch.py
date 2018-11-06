@@ -24,26 +24,35 @@ class BacktrackingLineSearch(optimizer):
         self.delta_x = delta_x
 
     
-    def find_min(self):
-        grad_x = copy(self.objectiveFunction.grad(self.x))
-        if (self.delta_x is None) or (self.objectiveFunction.best_x < np.inf):
-            self.delta_x = copy(-grad_x)
+    def find_min(self, method='sda'):
+        if method == 'sda':
+            self.x, a0 =  _steepest_descent_algorithm(self.x, 
+                                                    self.objectiveFunction, 
+                                                    self.interval, 
+                                                    self.maxIter, 
+                                                    self._line_search, 
+                                                    self.xtol)
+        #grad_x = copy(self.objectiveFunction.grad(self.x))
+        #if (self.delta_x is None) or (self.objectiveFunction.best_x < np.inf):
+        #    self.delta_x = copy(-grad_x)
 
-        for _ in range(self.maxIter):
-            self.t = 1
-            self._backtracking_line_search(grad_x)
-            self.x = self.x + self.t * self.delta_x
-            grad_x = copy(self.objectiveFunction.grad(self.x))
-            if np.linalg.norm(grad_x) <= self.xtol:
-                break
-            self.delta_x = copy(-grad_x)
+        #for _ in range(self.maxIter):
+        #    self.t = 1
+        #    self._backtracking_line_search(grad_x)
+        #    self.x = self.x + self.t * self.delta_x
+        #    grad_x = copy(self.objectiveFunction.grad(self.x))
+        #    if np.linalg.norm(grad_x) <= self.xtol:
+        #        break
+        #    self.delta_x = copy(-grad_x)
         return self.x
 
 
-    def _backtracking_line_search(self, grad_x):
+    def _line_search(self, dk):
+        delta_x = dk
+        grad_x = copy(-dk)
         f_x = self.objectiveFunction(self.x)
-        f_x_tdeltax = self.objectiveFunction(self.x + self.t * self.delta_x)
-        while f_x_tdeltax  >  f_x + self.alpha*self.t*(np.transpose(grad_x) @ self.delta_x):
+        f_x_tdeltax = self.objectiveFunction(self.x + self.t * delta_x)
+        while f_x_tdeltax  >  f_x + self.alpha*self.t*(np.transpose(grad_x) @ delta_x):
             self.t = self.beta * self.t
-            f_x_tdeltax = self.objectiveFunction(self.x + self.t * self.delta_x)
+            f_x_tdeltax = self.objectiveFunction(self.x + self.t * delta_x)
         return self.t, f_x_tdeltax
