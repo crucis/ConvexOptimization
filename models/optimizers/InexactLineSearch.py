@@ -71,7 +71,8 @@ class InexactLineSearch(optimizer):
         denominator = 2*(f_L - f0 + (a0 - self.alpha_L) * grad_f_L)
         return self.alpha_L + numerator/denominator
 
-    def _line_search(self, dk = None):
+    def _line_search(self, xk, dk = None):
+        self.x_k = xk
         if self.direction_vector is None:
             assert dk is not None, "Initial direction must be passed."
             self.direction_vector = dk

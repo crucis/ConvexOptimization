@@ -4,7 +4,7 @@ from copy import copy
 
 
 def _steepest_descent_algorithm(x_0, objectiveFunction, maxIter, line_search=None, xtol=1e-6):
-    x_k = copy(x_0)
+    x_k = np.array(x_0, dtype=np.float64)
     grad_x = copy(objectiveFunction.grad(x_k))
     direction_vector = copy(-grad_x)
     if line_search is None:
@@ -12,7 +12,7 @@ def _steepest_descent_algorithm(x_0, objectiveFunction, maxIter, line_search=Non
         f0 = objectiveFunction(x_k)
     for _ in range(maxIter):
         if line_search is not None:
-            a0, f0  = line_search(direction_vector)
+            a0, f0  = line_search(x_k, direction_vector)
         else:
             f_hat = objectiveFunction(x_k - a0*grad_x)
             a0 = (np.dot(grad_x, grad_x) * (a0 **2)) / (2 * (f_hat - f0 + a0 * np.dot(grad_x, grad_x)))
