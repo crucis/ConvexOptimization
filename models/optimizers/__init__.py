@@ -9,6 +9,7 @@ from .InexactLineSearch import InexactLineSearch
 from .BacktrackingLineSearch import BacktrackingLineSearch
 from .SteepestDescentAlgorithm import SteepestDescentAlgorithm
 from .BasicNewtonAlgorithm import BasicNewtonAlgorithm
+from .GaussNewtonMethod import GaussNewtonMethod
 
 __all__ = [
     'optimizer',
@@ -21,4 +22,5 @@ __all__ = [
     'InexactLineSearch',
     'BacktrackingLineSearch',
     'SteepestDescentAlgorithm',
-    'BasicNewtonAlgorithm']
+    'BasicNewtonAlgorithm',
+    'GaussNewtonMethod']
