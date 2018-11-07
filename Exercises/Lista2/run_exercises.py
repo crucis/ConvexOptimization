@@ -8,10 +8,7 @@ import operator
 import pandas as pd
 
 from functions import functionObj
-from models.optimizers import InexactLineSearch,\
-                              BacktrackingLineSearch,\
-                              SteepestDescentAlgorithmm,\
-                              GaussNewtonMethod
+
 
 def run_exercise(func, opt, line_search, seed=42, epsilon=1e-6, plot_charts=True):
     initial_x_names = [
