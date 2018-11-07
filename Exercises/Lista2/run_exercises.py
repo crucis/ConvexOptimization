@@ -12,7 +12,7 @@ from models.optimizers import InexactLineSearch,\
                               BacktrackingLineSearch,\
                               SteepestDescentAlgorithm
 
-def run_exercise(func, opt, line_search, seed=42, epsilon=1e-6):
+def run_exercise(func, opt, line_search, seed=42, epsilon=1e-6, plot_charts=True):
     initial_x_names = [
         '[4 4]T',
         '[4 -4]T',
@@ -41,17 +41,60 @@ def run_exercise(func, opt, line_search, seed=42, epsilon=1e-6):
     timings = []
 
     timings.append(time.process_time())
-    SteepestDescentAlgorithm(f_x1, x1, line_search_opt1).find_min()
+    opt(func=f_x1, x_0=x1, line_search_optimizer=line_search_opt1).find_min()
     timings.append(time.process_time())
-    SteepestDescentAlgorithm(f_x2, x2, line_search_opt2).find_min()
+    opt(func=f_x2, x_0=x2, line_search_optimizer=line_search_opt2).find_min()
     timings.append(time.process_time())
-    SteepestDescentAlgorithm(f_x3, x3, line_search_opt3).find_min()
+    opt(func=f_x3, x_0=x3, line_search_optimizer=line_search_opt3).find_min()
     timings.append(time.process_time())
-    SteepestDescentAlgorithm(f_x4, x4, line_search_opt4).find_min()
+    opt(func=f_x4, x_0=x4, line_search_optimizer=line_search_opt4).find_min()
     timings.append(time.process_time())
 
     timings = list(map(operator.sub, timings[1:], timings[:-1]))
 
+    df = create_df(initial_x_names, all_fx, timings)
+
+    if plot_charts == True:
+        line_search_name = 'with '+line_search.__name__ \
+            if line_search is not None else 'without line search'
+        opt_name = opt.__name__
+        _plot_charts(df, opt_name, line_search_name)
+
+    return df
+
+
+def _plot_charts(df, opt_name, line_search_name):
+    import matplotlib.pyplot as plt
+    plt.figure()
+    plt.title(opt_name+' '+line_search_name)
+    plt.xlabel('f evals')
+    plt.ylabel('$f(x)$')
+    #i = 4
+    for row_name, row in df.iterrows():
+        plt.semilogy(row['all_evals'], label=row_name)#, marker=i)
+        #i = (i + 1) % 11
+    plt.legend()
+    plt.show()
+
+
+def run_exercise520(func, opt, line_search, seed=42, epsilon=1e-6):
+    initial_x_names = [
+        '[-2 -1 1 2]T',
+        '[200 -200 100 -100]T'
+    ]
+
+    f_x = functionObj(func)
+    f_x_SDA = functionObj(func)
+    f_x_Newton = functionObj(func)
+    f_x_Gauss = functionObj(func)
+
+    start_time = time.process_time()
+    min_brute = optimize.brute(f_x, ((-200, 200), (-200, 200), (-200, 200), (-200, 200)), full_output=True)
+    brute_time = time.process_time() - start_time
+
+
+
+def create_df(initial_x_names, all_fx, timings):
     # create dataframe
     methods = ['best_x', 'best_f', 'fevals', 'all_evals', 'all_x']
     
@@ -72,4 +115,5 @@ def run_exercise(func, opt, line_search, seed=42, epsilon=1e-6):
     df['all_x'] = df['all_x'].map(lambda x: x._value if hasattr(x, '_value') \
                                           else x)
     df['run_time (s)'] = timings
+    
     return df
