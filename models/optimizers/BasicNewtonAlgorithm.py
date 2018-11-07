@@ -8,7 +8,7 @@ from autograd import hessian
 from copy import copy
 
 def _basic_newton_algo(x_0, objectiveFunction, line_search, maxIter=1000, xtol=1-6):
-    x_k = copy(x_0)
+    x_k = np.array(x_0, dtype=np.float64)
     for _ in range(maxIter):
         # step 2
         grad_x = objectiveFunction.grad(x_k)
