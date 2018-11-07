@@ -83,16 +83,35 @@ def run_exercise520(func, opt, line_search, seed=42, epsilon=1e-6):
         '[200 -200 100 -100]T'
     ]
 
-    f_x = functionObj(func)
-    f_x_SDA = functionObj(func)
-    f_x_Newton = functionObj(func)
-    f_x_Gauss = functionObj(func)
-
-    start_time = time.process_time()
-    min_brute = optimize.brute(f_x, ((-200, 200), (-200, 200), (-200, 200), (-200, 200)), full_output=True)
-    brute_time = time.process_time() - start_time
+    np.random.seed(seed) # forces repeatability
+    x1 = np.array([-2, -1, 1, 2], dtype=np.float64)
+    x2 = np.array([200, -200, 100, -100], dtype=np.float64)
 
 
+    f_x1 = functionObj(func)
+    line_search_opt1 = line_search if line_search is None else line_search(f_x1, x1)
+    f_x2 = functionObj(func)
+    line_search_opt2 = line_search if line_search is None else line_search(f_x2, x2)
+
+    timings = []
+
+    timings.append(time.process_time())
+    opt(func=f_x1, x_0=x1, line_search_optimizer=line_search_opt1).find_min()
+    timings.append(time.process_time())
+    opt(func=f_x2, x_0=x2, line_search_optimizer=line_search_opt2).find_min()
+    timings.append(time.process_time())
+
+    timings = list(map(operator.sub, timings[1:], timings[:-1]))
+
+    df = create_df(initial_x_names, all_fx, timings)
+
+    if plot_charts == True:
+        line_search_name = 'with '+line_search.__name__ \
+            if line_search is not None else 'without line search'
+        opt_name = opt.__name__
+        _plot_charts(df, opt_name, line_search_name)
+
+    return df
 
 def create_df(initial_x_names, all_fx, timings):
     # create dataframe
