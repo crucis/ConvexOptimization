@@ -12,7 +12,7 @@ class BacktrackingLineSearch(optimizer):
                         alpha = 0.49999, 
                         beta = 0.7,
                         interval = [-100, 100],
-                        maxIter = 1e6, 
+                        maxIter = 200, 
                         xtol = 1e-6, 
                         ftol = 1e-6):
         super().__init__(func = func, maxIter = maxIter, xtol = xtol, ftol = ftol, interval=interval)  
@@ -53,12 +53,16 @@ class BacktrackingLineSearch(optimizer):
         delta_x = dk
         grad_x = copy(-dk)
         f_x = self.objectiveFunction(x)
+
         if hasattr(f_x, '__iter__'):
             f_x = f_x.T @ f_x
         f_x_tdeltax = self.objectiveFunction(x + t * delta_x)
+
         if hasattr(f_x_tdeltax, '__iter__'):
             f_x_tdeltax = f_x_tdeltax.T @ f_x_tdeltax
-        while f_x_tdeltax  >  f_x + self.alpha*t*(np.transpose(grad_x) @ delta_x):
+
+        while f_x_tdeltax  >  f_x + self.alpha*t*(np.transpose(grad_x) @ delta_x) + 2*self.xtol:
+            #print(f_x_tdeltax, '-----:',f_x + self.alpha*t*(np.transpose(grad_x) @ delta_x))
             t = self.beta * t
             f_x_tdeltax = self.objectiveFunction(x + t * delta_x)
             if hasattr(f_x_tdeltax, '__iter__'):
