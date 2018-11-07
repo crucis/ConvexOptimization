@@ -4,6 +4,9 @@ from autograd import grad, hessian
 import autograd.numpy as np
 from copy import copy
 
+import sys
+sys.path.append('../..')
+from functions import functionObj
 
 class InexactLineSearch(optimizer):
     def __init__(self, func, 
@@ -117,7 +120,7 @@ class InexactLineSearch(optimizer):
 
             else:
                 # step 6
-                if g0 is None:
+                if type(self.objectiveFunction) is functionObj:
                     gk = self.objectiveFunction.grad(self.x_k + a0 * self.direction_vector)
                 else:
                     x = self.x_k + a0 * self.direction_vector
