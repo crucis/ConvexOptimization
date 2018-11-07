@@ -30,9 +30,9 @@ def MatthewsDaviesAlgorithm(hess_k):
         if (0 < hessian_k[k][k]) and (hessian_k[k,k] < h_00):
             h_00 = hessian_k[k,k]
     # step 3
-    lowerTriangular[hessian_size - 1,hessian_size - 1] = 1
-    if hessian_k[hessian_size - 1,hessian_size - 1] <= 0:
-        hessian_k[hessian_size - 1,hessian_size - 1] = h_00
+    lowerTriangular[hessian_size - 1, hessian_size - 1] = 1
+    if hessian_k[hessian_size - 1, hessian_size - 1] <= 0:
+        hessian_k[hessian_size - 1, hessian_size - 1] = h_00
     for i in range (hessian_size):
-        diagonalMatrix[i,i] = hessian_k[i,i]
+        diagonalMatrix[i, i] = hessian_k[i,i]
     return hessian_k, lowerTriangular, diagonalMatrix
