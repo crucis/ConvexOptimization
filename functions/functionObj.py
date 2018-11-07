@@ -82,19 +82,18 @@ class functionObj_multiDim(functionObj):
         
         # Autograd ArrayBox behaves differently from numpy, that fixes it.
         if type(result) == np.numpy_boxes.ArrayBox:
-            result_copy = copy(result._value if not hasattr(result._value, '__iter__') \
-                                                else result._value[0])
+            result_copy = copy(result._value)
         else:
             result_copy = copy(result)
         if type(x) == np.numpy_boxes.ArrayBox:
-            x_copy = x._value if not hasattr(x._value, '__iter__') else x._value[0]
+            x_copy = x._value
         else:
             x_copy = x
 
         assert np.isnan(result_copy).all() == False, "X out of domain"
 
-        self.all_evals += [result_copy]
-        self.all_x += [x_copy]
+        self.all_evals += [[result_copy]]
+        self.all_x += [[x_copy]]
         found_best = np.all(result_copy <= self.best_f)
 
         if found_best:
