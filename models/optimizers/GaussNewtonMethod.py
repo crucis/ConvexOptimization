@@ -37,14 +37,16 @@ def _gaussian_newton_algo(x_0, objectiveFunction_list, line_search, maxIter=1000
 
 
         # step 5
-        alpha_k, f_k = line_search(x_k, d_k, H_k, g_k)
+        alpha_k, F_k_new = line_search(x_k, d_k)#, H_k, g_k)
 
-
+        #print(alpha_k)
+        #input()
         # step 6
         x_k = x_k + alpha_k * d_k
         #f_k = objectiveFunction_list(x_k)
-        F_k_new = f_k.T @ f_k
-
+        #F_k_new = f_k.T @ f_k
+        #print(alpha_k)
+        #input()
         # step 7
         if np.abs(F_k_new - F_k) < xtol:
             break
