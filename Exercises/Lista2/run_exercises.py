@@ -120,9 +120,11 @@ def create_df(initial_x_names, all_fx, timings):
                for x_name, fx in zip(initial_x_names, all_fx)}
     df = pd.DataFrame(dict_fx).T
     df['best_f'] = df['best_f']#.map(lambda x: x if not hasattr(x, '__iter__') else x[0])
-    df['best_x0'] = df['best_x'].map(lambda x: x if not hasattr(x, '__iter__') else x[0])
-    df['best_x1'] = df['best_x'].map(lambda x: x if not hasattr(x, '__iter__') else x[1])
-
+    if hasattr(df.iloc[0]['best_x'], '__iter__'):
+        for i in range(len(df.iloc[0]['best_x'])):
+            df['best_x'+str(i)] = df['best_x'].map(lambda x: x if not hasattr(x, '__iter__') else x[i])
+    else:
+        df['best_x'] = df['best_x'].map(lambda x: x if not hasattr(x, '__iter__') else x[0])
     df['all_evals'] = df['all_evals'].map(lambda x: np.array(x) if not hasattr(x[0], '__iter__') \
                                           else np.array(x).flatten())
 
