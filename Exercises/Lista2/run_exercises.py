@@ -7,7 +7,7 @@ import autograd.numpy as np
 import operator
 import pandas as pd
 
-from functions import functionObj
+from functions import functionObj, functionObj_multiDim
 
 
 def run_exercise(func, opt, line_search, seed=42, epsilon=1e-6, plot_charts=True):
@@ -86,9 +86,9 @@ def run_exercise520(func, opt, line_search, seed=42, epsilon=1e-6, plot_charts=T
     x2 = np.array([200, -200, 100, -100], dtype=np.float64)
 
 
-    f_x1 = functionObj(func)
+    f_x1 = func if type(func) is functionObj_multiDim else functionObj(func)
     line_search_opt1 = line_search if line_search is None else line_search(f_x1, x1)
-    f_x2 = functionObj(func)
+    f_x2 = func if type(func) is functionObj_multiDim else functionObj(func)
     line_search_opt2 = line_search if line_search is None else line_search(f_x2, x2)
 
     all_fx = [f_x1, f_x2]
