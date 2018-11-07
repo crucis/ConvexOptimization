@@ -1,6 +1,8 @@
 from .optimizer import optimizer
+from .SteepestDescentAlgorithm import _steepest_descent_algorithm
 import autograd.numpy as np
 from copy import copy
+
 
 
 class BacktrackingLineSearch(optimizer):
@@ -8,7 +10,7 @@ class BacktrackingLineSearch(optimizer):
                         initial_x,
                         delta_x = None,
                         alpha = 0.49999, 
-                        beta = 0.5,
+                        beta = 0.7,
                         interval = [-100, 100],
                         maxIter = 1e6, 
                         xtol = 1e-6, 
@@ -19,7 +21,6 @@ class BacktrackingLineSearch(optimizer):
 
         self.alpha = alpha
         self.beta = beta
-        self.t = 1
         self.x = initial_x
         self.delta_x = delta_x
 
@@ -48,11 +49,20 @@ class BacktrackingLineSearch(optimizer):
 
 
     def _line_search(self, x, dk):
+        t = 1
         delta_x = dk
         grad_x = copy(-dk)
         f_x = self.objectiveFunction(x)
-        f_x_tdeltax = self.objectiveFunction(x + self.t * delta_x)
-        while f_x_tdeltax  >  f_x + self.alpha*self.t*(np.transpose(grad_x) @ delta_x):
-            self.t = self.beta * self.t
-            f_x_tdeltax = self.objectiveFunction(x + self.t * delta_x)
-        return self.t, f_x_tdeltax
+        if hasattr(f_x, '__iter__'):
+            f_x = f_x.T @ f_x
+        f_x_tdeltax = self.objectiveFunction(x + t * delta_x)
+        if hasattr(f_x_tdeltax, '__iter__'):
+            f_x_tdeltax = f_x_tdeltax.T @ f_x_tdeltax
+        while f_x_tdeltax  >  f_x + self.alpha*t*(np.transpose(grad_x) @ delta_x):
+            t = self.beta * t
+            f_x_tdeltax = self.objectiveFunction(x + t * delta_x)
+            if hasattr(f_x_tdeltax, '__iter__'):
+                f_x_tdeltax = f_x_tdeltax.T @ f_x_tdeltax
+            if t < 2*self.xtol:
+                break
+        return t, f_x_tdeltax
