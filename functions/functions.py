@@ -25,3 +25,11 @@ def exercise57(x):
 def exercise520(x):
     x = np.array(x, dtype=np.float64)
     return (x[0] + 10*x[1]) **2 + 5*(x[2] - x[3]) **2 + (x[1] - 2* x[2]) ** 4 + 100 * (x[0] - x[3])**4
+
+def exercise520_gauss(x):
+    x = np.array(x, dtype=np.float64)
+    f1 = x[0] + 10*x[1]
+    f2 = np.sqrt(5) * (x[2] - x[3])
+    f3 = (x[1] - 2*x[2]) ** 2
+    f4 = 10 * (x[0] - x[3]) ** 2
+    return np.array([f1(x), f2(x), f3(x), f4(x)], dtype=np.float64)
