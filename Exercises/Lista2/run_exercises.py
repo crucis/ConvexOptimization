@@ -10,7 +10,8 @@ import pandas as pd
 from functions import functionObj
 from models.optimizers import InexactLineSearch,\
                               BacktrackingLineSearch,\
-                              SteepestDescentAlgorithm
+                              SteepestDescentAlgorithmm,\
+                              GaussNewtonMethod
 
 def run_exercise(func, opt, line_search, seed=42, epsilon=1e-6, plot_charts=True):
     initial_x_names = [
@@ -77,7 +78,7 @@ def _plot_charts(df, opt_name, line_search_name):
     plt.show()
 
 
-def run_exercise520(func, opt, line_search, seed=42, epsilon=1e-6):
+def run_exercise520(func, opt, line_search, seed=42, epsilon=1e-6, plot_charts=True):
     initial_x_names = [
         '[-2 -1 1 2]T',
         '[200 -200 100 -100]T'
@@ -93,6 +94,7 @@ def run_exercise520(func, opt, line_search, seed=42, epsilon=1e-6):
     f_x2 = functionObj(func)
     line_search_opt2 = line_search if line_search is None else line_search(f_x2, x2)
 
+    all_fx = [f_x1, f_x2]
     timings = []
 
     timings.append(time.process_time())
