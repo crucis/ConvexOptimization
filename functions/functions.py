@@ -33,3 +33,20 @@ def exercise520_gauss(x):
     f3 = lambda x: (x[1] - 2*x[2]) ** 2
     f4 = lambda x: 10 * (x[0] - x[3]) ** 2
     return np.array([f1(x), f2(x), f3(x), f4(x)], dtype=np.float64)
+
+def exercise61(x):
+    Q1 = np.array([[12, 8, 7, 6], [8, 12, 8, 7], [7, 8, 12, 8], [6, 7, 8, 12]], dtype=np.float64)
+    Q2 = np.array([[3, 2, 1, 0], [2, 3, 2, 1], [1, 2, 3, 2], [0, 1, 2, 3]], dtype=np.float64)
+    Q3 = np.array([[2, 1, 0, 0], [1, 2, 1, 0], [0, 1, 2, 1], [0, 0, 1, 2]], dtype=np.float64)
+    Q4 = np.eye(4)
+    Q_l1 = np.hstack([Q1, Q2, Q3, Q4])#, [Q2, Q1, Q2, Q3], [Q3, Q2, Q1, Q2], [Q4, Q3, Q2, Q1]], axis=0)
+    Q_l2 = np.hstack([Q2, Q1, Q2, Q3])
+    Q_l3 = np.hstack([Q3, Q2, Q1, Q2])
+    Q_l4 = np.hstack([Q4, Q3, Q2, Q1])
+    Q = np.vstack([Q_l1, Q_l2, Q_l3, Q_l4])
+
+    b = -np.array([1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0], dtype=np.float64)
+
+    x_0 = np.ones_like(b)
+    f_x = lambda x: 0.5 * np.dot(np.dot(x.T, Q), x) + np.dot(b.T, x)
+    return f_x(x)
