@@ -12,6 +12,7 @@ from .BasicNewtonAlgorithm import BasicNewtonAlgorithm
 from .GaussNewtonMethod import GaussNewtonMethod
 from .ConjugateGradientAlgorithm import ConjugateGradientAlgorithm
 from .FletcherReevesAlgorithm import FletcherReevesAlgorithm
+from .QuasiNewtonAlgorithm import QuasiNewtonAlgorithm
 
 
 __all__ = [
@@ -28,4 +29,5 @@ __all__ = [
     'BasicNewtonAlgorithm',
     'GaussNewtonMethod',
     'ConjugateGradientAlgorithm',
-    'FletcherReevesAlgorithm']
+    'FletcherReevesAlgorithm',
+    'QuasiNewtonAlgorithm']
