@@ -17,3 +17,19 @@ def sinoid(x):
 def order4_polynomial(x):
     x = np.array(x, dtype=np.float64)
     return 0.7*x[0]**4 - 8*x[0]**2 + 6*x[1]**2 + np.cos(x[0]*x[1]) - 8*x[0]
+
+def exercise57(x):
+    x = np.array(x, dtype=np.float64)
+    return (x[0]**2 + x[1]**2 - 1) **2 + (x[0] + x[1] - 1)**2
+
+def exercise520(x):
+    x = np.array(x, dtype=np.float64)
+    return (x[0] + 10*x[1]) **2 + 5*(x[2] - x[3]) **2 + (x[1] - 2* x[2]) ** 4 + 100 * (x[0] - x[3])**4
+
+def exercise520_gauss(x):
+    x = np.array(x, dtype=np.float64)
+    f1 = lambda x: x[0] + 10*x[1]
+    f2 = lambda x: np.sqrt(5) * (x[2] - x[3])
+    f3 = lambda x: (x[1] - 2*x[2]) ** 2
+    f4 = lambda x: 10 * (x[0] - x[3]) ** 2
+    return np.array([f1(x), f2(x), f3(x), f4(x)], dtype=np.float64)

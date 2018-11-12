@@ -1,6 +1,7 @@
 import autograd.numpy as np
-from autograd import grad
+from autograd import grad, jacobian
 from copy import copy
+
 
 class functionObj:
     def __init__(self, func):    
@@ -62,7 +63,38 @@ class functionObj:
         if hasattr(result_copy, '__iter__') or hasattr(self.best_f, '__iter__'):
             found_best = (result_copy <= self.best_f).all()
         else:
-            found_best = result_copy < self.best_f 
+            found_best = result_copy <= self.best_f 
+
+        if found_best:
+            self.best_x = x_copy
+            self.best_f = result_copy
+        return result
+
+
+class functionObj_multiDim(functionObj):
+    def __init__(self, func):
+        super().__init__(func)
+        self._grad = jacobian(self.func)
+
+
+    def _update_params(self, x, result):
+        self.fevals = self.fevals + 1
+        
+        # Autograd ArrayBox behaves differently from numpy, that fixes it.
+        if type(result) == np.numpy_boxes.ArrayBox:
+            result_copy = copy(result._value)
+        else:
+            result_copy = copy(result)
+        if type(x) == np.numpy_boxes.ArrayBox:
+            x_copy = x._value
+        else:
+            x_copy = x
+
+        assert np.isnan(result_copy).all() == False, "X out of domain"
+
+        self.all_evals += [[result_copy]]
+        self.all_x += [[x_copy]]
+        found_best = np.all(result_copy <= self.best_f)
 
         if found_best:
             self.best_x = x_copy

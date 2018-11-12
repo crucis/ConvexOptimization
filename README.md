@@ -12,4 +12,4 @@ All optimization algorithms are implemented on [models/optimizers](models/optimi
 For some examples, please check [tests folder](tests/)
 
 Exercises made for this class (might be in brazilian portuguese):
-1. [Lista 1](Exercises/ExerciciosLista1.ipynb)
+1. [Lista 1](Exercises/Lista1/ExerciciosLista1.ipynb)
