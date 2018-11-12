@@ -7,6 +7,7 @@ class functionObj:
     def __init__(self, func):    
         self.func = func
         self.fevals = 0
+        self.grad_evals = 0
         self.best_x = np.inf
         self.best_f = np.inf
         self.all_evals = []
@@ -30,6 +31,10 @@ class functionObj:
         self.__init__(self.func)
 
 
+    @ property
+    def nevals(self):
+        return self.fevals + self.grad_evals
+
     def grad(self, x, save_eval = True):
         if type(x) == int:
             x = float(x)
@@ -39,6 +44,7 @@ class functionObj:
         if not save_eval:
             return self._grad(x)
         result = self._grad(x)
+        self.grad_evals = self.grad_evals + 1
         return result
 
 
