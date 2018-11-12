@@ -10,6 +10,9 @@ from .BacktrackingLineSearch import BacktrackingLineSearch
 from .SteepestDescentAlgorithm import SteepestDescentAlgorithm
 from .BasicNewtonAlgorithm import BasicNewtonAlgorithm
 from .GaussNewtonMethod import GaussNewtonMethod
+from .ConjugateGradientAlgorithm import ConjugateGradientAlgorithm
+from .FletcherReevesAlgorithm import FletcherReevesAlgorithm
+
 
 __all__ = [
     'optimizer',
@@ -23,4 +26,6 @@ __all__ = [
     'BacktrackingLineSearch',
     'SteepestDescentAlgorithm',
     'BasicNewtonAlgorithm',
-    'GaussNewtonMethod']
+    'GaussNewtonMethod',
+    'ConjugateGradientAlgorithm',
+    'FletcherReevesAlgorithm']
