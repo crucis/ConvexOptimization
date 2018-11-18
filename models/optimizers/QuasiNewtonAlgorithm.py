@@ -1,6 +1,6 @@
 from .optimizer import optimizer
 import autograd.numpy as np
-
+from copy import copy
 
 def _quasi_newton_algorithm(x, objectiveFunction, formula, xtol, maxIter):
     # step 1
@@ -13,8 +13,8 @@ def _quasi_newton_algorithm(x, objectiveFunction, formula, xtol, maxIter):
     S = np.eye(len(x))
     f = objectiveFunction(x)
     gk = objectiveFunction.grad(x)
-    f_00 = f
-    delta_f = f
+    f_00 = copy(f)
+    delta_f = copy(f)
 
     for _ in range(maxIter): 
         # step 2 line search
@@ -30,10 +30,13 @@ def _quasi_newton_algorithm(x, objectiveFunction, formula, xtol, maxIter):
             alpha_0 = 1
         if (alpha_0 <= 0) or (alpha_0 > 1):
             alpha_0 = 1
-        
         # step 3
-        for _ in range(maxIter): 
+        for _ in range(maxIter):
+            if alpha_0 < xtol:
+                break
             delta_k = alpha_0*direction_vector
+            if np.square(np.linalg.norm(delta_k)) < xtol:
+                break
             f = objectiveFunction(x+delta_k)
 
             # step 4 interpolation
@@ -43,7 +46,7 @@ def _quasi_newton_algorithm(x, objectiveFunction, formula, xtol, maxIter):
                 
                 alpha_tilde = _compute_a0tilde(alpha_0, f, f_L, grad_fL, alpha_L)
                 alpha_tilde_L = alpha_L + tau*(alpha_U - alpha_L)
-                if alpha_tilde < alpha_L:
+                if alpha_tilde < alpha_tilde_L:
                     alpha_tilde = alpha_tilde_L
                 alpha_tilde_U = alpha_U - tau*(alpha_U - alpha_L)
                 if alpha_tilde > alpha_tilde_U:
@@ -80,6 +83,7 @@ def _quasi_newton_algorithm(x, objectiveFunction, formula, xtol, maxIter):
         # step 8
         gk_new = objectiveFunction.grad(x)
         gamma_k = gk_new - gk
+        gk = copy(gk_new)
         D = np.dot(delta_k.T, gamma_k)
         if D <= 0:
             S = np.eye(x.shape[0])
@@ -105,9 +109,10 @@ def _compute_Sk(method, S, delta_k, gamma_k):
 
 def _compute_Sk_DFP(S, delta_k, gamma_k):
     second_term = np.dot(delta_k[:, np.newaxis], delta_k[:, np.newaxis].T)/np.dot(delta_k.T, delta_k)
-    third_term = np.dot(np.dot(np.dot(np.dot(S, gamma_k[:, np.newaxis]), gamma_k[:, np.newaxis].T), S), \
-        gamma_k[:, np.newaxis])/np.dot(np.dot(gamma_k[:, np.newaxis].T, S), gamma_k[:, np.newaxis])
-    return S + second_term - third_term
+    F = np.dot(S, gamma_k[:, np.newaxis])
+    third_term = np.dot(F, F.T)/np.dot(gamma_k[:, np.newaxis].T, F)
+    S = S + second_term - third_term
+    return S
 
 
 def _compute_Sk_BFGS(S, delta_k, gamma_k):
@@ -128,7 +133,7 @@ class QuasiNewtonAlgorithm(optimizer):
                  ftol = 1e-6):
         self.objectiveFunction = func
         self.x_k = x_0
-        possible_formulas = ['Rank-one', 'DFP', 'BFGS', 'McCormick', 'Pearson']
+        possible_formulas = ['DFP', 'BFGS']
         assert formula in possible_formulas, "Formula must be one of " + str(possible_formulas)
         self.formula = formula
         super().__init__(func = func, maxIter = maxIter, xtol = xtol, ftol = ftol)
