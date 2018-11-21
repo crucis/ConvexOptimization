@@ -9,7 +9,7 @@ class BacktrackingLineSearch(optimizer):
     def __init__(self, func, 
                         initial_x,
                         delta_x = None,
-                        alpha = 0.49999, 
+                        alpha = 0.03, 
                         beta = 0.7,
                         interval = [-100, 100],
                         maxIter = 200, 
@@ -61,7 +61,7 @@ class BacktrackingLineSearch(optimizer):
         if hasattr(f_x_tdeltax, '__iter__'):
             f_x_tdeltax = f_x_tdeltax.T @ f_x_tdeltax
 
-        while f_x_tdeltax  >  f_x + self.alpha*t*(np.transpose(grad_x) @ delta_x) + 2*self.xtol:
+        while ~np.isclose(f_x_tdeltax, f_x + self.alpha*t*(np.transpose(grad_x) @ delta_x), rtol=1e-3):
             #print(f_x_tdeltax, '-----:',f_x + self.alpha*t*(np.transpose(grad_x) @ delta_x))
             t = self.beta * t
             f_x_tdeltax = self.objectiveFunction(x + t * delta_x)
