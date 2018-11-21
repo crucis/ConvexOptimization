@@ -58,6 +58,12 @@ def exercise61(x):
     f_x = lambda x: 0.5 * np.dot(np.dot(x.T, Q), x) + np.dot(b.T, x)
     return f_x(x)
 
+
 def rosenbrock(x):
     assert len(x) == 2, 'Rosenbrock function made for two-dimensional variables'
     return 100 * (x[1] - x[0]**2)**2 + (1 - x[0])**2
+
+
+def exercise54(x):
+    assert len(x) == 2, 'x must be a 2-dimensional variable'
+    return 5*x[0]**2 - 9 *x[0]*x[1] + 4.075*x[1]**2 + x[0]
