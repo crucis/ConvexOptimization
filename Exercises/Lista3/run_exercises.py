@@ -10,7 +10,7 @@ import pandas as pd
 from functions import functionObj, functionObj_multiDim
 
 
-def run_exercise(func, opt, seed=42, epsilon=1e-6, plot_charts=True):
+def run_exercise(func, opt, formula=None, line_search=None, seed=42, epsilon=1e-6, plot_charts=True):
     initial_x_names = [
         '[2 -2]T',
         '[-2 2]T',
@@ -27,18 +27,21 @@ def run_exercise(func, opt, seed=42, epsilon=1e-6, plot_charts=True):
     f_x2 = functionObj(func)
     f_x3 = functionObj(func)
 
-
     all_fx = [f_x1, f_x2, f_x3]
+    all_x = [x1, x2, x3]
     timings = []
 
     timings.append(time.process_time())
-    opt(func=f_x1, x_0=x1).find_min()
-    timings.append(time.process_time())
-    opt(func=f_x2, x_0=x2).find_min()
-    timings.append(time.process_time())
-    opt(func=f_x3, x_0=x3).find_min()
-    timings.append(time.process_time())
-
+    for fx, initial_x in zip(all_fx, all_x):
+        if line_search is not None:
+            ls = line_search(fx, initial_x)
+            opt(func=fx, x_0=initial_x, line_search_optimizer=ls, xtol=epsilon).find_min()
+        elif formula is None:
+            opt(func=fx, x_0=initial_x, xtol=epsilon).find_min()
+        else:
+            opt(func=fx, x_0=initial_x, formula=formula, xtol=epsilon).find_min()
+        timings.append(time.process_time())
+        
     timings = list(map(operator.sub, timings[1:], timings[:-1]))
 
     df = create_df(initial_x_names, all_fx, timings)
@@ -71,18 +74,14 @@ def create_df(initial_x_names, all_fx, timings):
     dict_fx = {x_name: {method: getattr(fx, method) for method in methods}\
                for x_name, fx in zip(initial_x_names, all_fx)}
     df = pd.DataFrame(dict_fx).T
-    df['best_f'] = df['best_f']#.map(lambda x: x if not hasattr(x, '__iter__') else x[0])
     df['best_f'] = df['best_f'].map(lambda x: x if not hasattr(x, '_value') else x._value)
-    if hasattr(df.iloc[0]['best_x'], '__iter__'):
-        for i in range(len(df.iloc[0]['best_x'])):
-            df['best_x'+str(i)] = df['best_x'].map(lambda x: x if not hasattr(x, '__iter__') else x[i])
-    else:
-        df['best_x'] = df['best_x'].map(lambda x: x if not hasattr(x, '__iter__') else x[0])
-    df['all_evals'] = df['all_evals'].map(lambda x: np.array(x) if not hasattr(x[0], '__iter__') \
-                                          else np.array(x).flatten())
+    df['best_x'] = df['best_x'].map(lambda x: x if not hasattr(x, '_value') else x._value)
 
-    df['all_x'] = df['all_x'].map(lambda x: np.array(x) if not hasattr(x[0], '__iter__') \
-                                  else np.array(x).flatten())
+    if hasattr(df.iloc[0]['best_x'], '_value'):
+        for i in range(len(df.iloc[0]['best_x'])):
+            df['best_x'+str(i)] = df['best_x'].map(lambda x: x if not hasattr(x, '_value') else x._value[i])
+    else:
+        df['best_x'] = df['best_x'].map(lambda x: x if not hasattr(x, '_value') else x._value)
     df['all_evals'] = df['all_evals'].map(lambda x: x._value if hasattr(x, '_value') \
                                           else x)
     df['all_x'] = df['all_x'].map(lambda x: x._value if hasattr(x, '_value') \
