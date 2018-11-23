@@ -10,7 +10,7 @@ import pandas as pd
 from functions import functionObj, functionObj_multiDim
 
 
-def run_exercise(func, opt, line_search, seed=42, epsilon=1e-6, plot_charts=True):
+def run_exercise(func, opt, line_search, solution, seed=42, epsilon=1e-6, plot_charts=True):
     initial_x_names = [
         '[4 4]T',
         '[4 -4]T',
@@ -50,7 +50,7 @@ def run_exercise(func, opt, line_search, seed=42, epsilon=1e-6, plot_charts=True
 
     timings = list(map(operator.sub, timings[1:], timings[:-1]))
 
-    df = create_df(initial_x_names, all_fx, timings)
+    df = create_df(initial_x_names, all_fx, timings, solution)
 
     if plot_charts == True:
         line_search_name = 'with '+line_search.__name__ \
@@ -102,7 +102,7 @@ def run_exercise520(func, opt, line_search, seed=42, epsilon=1e-6, plot_charts=T
 
     timings = list(map(operator.sub, timings[1:], timings[:-1]))
 
-    df = create_df(initial_x_names, all_fx, timings)
+    df = create_df(initial_x_names, all_fx, timings, solution)
 
     if plot_charts == True:
         line_search_name = 'with '+line_search.__name__ \
@@ -112,14 +112,17 @@ def run_exercise520(func, opt, line_search, seed=42, epsilon=1e-6, plot_charts=T
 
     return df
 
-def create_df(initial_x_names, all_fx, timings):
+def create_df(initial_x_names, all_fx, timings, solution):
     # create dataframe
     methods = ['best_x', 'best_f', 'fevals', 'all_evals', 'all_x']
     
     dict_fx = {x_name: {method: getattr(fx, method) for method in methods}\
                for x_name, fx in zip(initial_x_names, all_fx)}
     df = pd.DataFrame(dict_fx).T
-    df['best_f'] = df['best_f']#.map(lambda x: x if not hasattr(x, '__iter__') else x[0])
+    df['best_x'] = df['best_x'].map(lambda x: x._value if hasattr(x, '_value') \
+                                        else x)
+    df['best_f'] = df['best_f'].map(lambda x: x._value if hasattr(x, '_value') \
+                                        else x)
     if hasattr(df.iloc[0]['best_x'], '__iter__'):
         for i in range(len(df.iloc[0]['best_x'])):
             df['best_x'+str(i)] = df['best_x'].map(lambda x: x if not hasattr(x, '__iter__') else x[i])
@@ -134,6 +137,7 @@ def create_df(initial_x_names, all_fx, timings):
                                           else x)
     df['all_x'] = df['all_x'].map(lambda x: x._value if hasattr(x, '_value') \
                                           else x)
+    df['delta_f'] = df['best_f'] - solution
     df['run_time (s)'] = timings
     
     return df

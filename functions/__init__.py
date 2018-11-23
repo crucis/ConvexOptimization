@@ -5,6 +5,9 @@ from .functions import sinoid
 from .functions import exercise57
 from .functions import exercise520
 from .functions import exercise520_gauss
+from .functions import exercise61
+from .functions import rosenbrock
+from .functions import exercise54
 from .functionObj import functionObj
 from .functionObj import functionObj_multiDim
 
@@ -17,5 +20,8 @@ __all__ = ['order4_polynomial',
             'exercise57',
             'exercise520',
             'exercise520_gauss',
+            'exercise61',
+            'rosenbrock',
+            'exercise54',
             'functionObj',
             'functionObj_multiDim']
