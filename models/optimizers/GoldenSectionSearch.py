@@ -26,7 +26,6 @@ class GoldenSectionSearch(optimizer):
         for _ in range(1, self.maxIter):
             self.I = self.I/self.golden_ratio
             self._update_interval()
-            print(self.alpha_a, self.alpha_b, self.I)
             if (self.I < self.xtol) or (self.alpha_a > self.alpha_b):
                 break
         if self.fx_a > self.fx_b:
