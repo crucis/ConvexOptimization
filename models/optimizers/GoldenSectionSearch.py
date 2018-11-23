@@ -3,42 +3,54 @@ import numpy as np
 from copy import copy
 
 class GoldenSectionSearch(optimizer):
-    def find_min(self):
-        self.I = self.interval[1] - self.interval[0]
-        self.golden_ration = (1 + 5 ** 0.5)/2
-        self.I = self.I/self.golden_ration
+    def _line_search(self, x=None, dk=None):
+        if x is None:
+            self.x = 0
+            self.dk = 1
+        else:
+            self.x = x
+            self.dk = 1
+        if dk is not None:
+            self.dk = dk
+            
+        self.internal_interval = copy(self.interval)
+        self.I = self.internal_interval[1] - self.internal_interval[0]
+        self.golden_ratio = (1 + 5 ** 0.5)/2
+        self.I = self.I/self.golden_ratio
 
-        self.x_a = self.interval[1] - self.I
-        self.x_b = self.interval[0] + self.I
-
-        self.fx_a = self.objectiveFunction(self.x_a)
-        self.fx_b = self.objectiveFunction(self.x_b)
+        self.alpha_a = self.internal_interval[1] - self.I
+        self.alpha_b = self.internal_interval[0] + self.I
+        self.fx_a = self.objectiveFunction(self.x + self.alpha_a*self.dk)
+        self.fx_b = self.objectiveFunction(self.x + self.alpha_b*self.dk)
 
         for _ in range(1, self.maxIter):
-            self.I = self.I/self.golden_ration
+            self.I = self.I/self.golden_ratio
             self._update_interval()
-            if (self.I < self.xtol) or (self.x_a > self.x_b):
+            print(self.alpha_a, self.alpha_b, self.I)
+            if (self.I < self.xtol) or (self.alpha_a > self.alpha_b):
                 break
         if self.fx_a > self.fx_b:
-            x = 0.5*(self.x_b + self.interval[1])
+            alpha = 0.5*(self.alpha_b + self.internal_interval[1])
+            f = self.fx_b
         elif self.fx_a == self.fx_b:
-            x = 0.5*(self.x_a + self.x_b)
+            alpha = 0.5*(self.alpha_a + self.alpha_b)
+            f = self.fx_a
         else:
-            x = 0.5*(self.interval[0] + self.x_a)
-        return x    
+            alpha = 0.5*(self.internal_interval[0] + self.alpha_a)
+            f = self.fx_a
+        return alpha, f
 
 
     def _update_interval(self):
         if self.fx_a >= self.fx_b:
-            self.interval[0] = copy(self.x_a)
-            self.x_a = copy(self.x_b)
-            self.x_b = self.interval[0] + self.I
+            self.internal_interval[0] = copy(self.alpha_a)
+            self.alpha_a = copy(self.alpha_b)
+            self.alpha_b = self.internal_interval[0] + self.I
             self.fx_a = copy(self.fx_b)
-            self.fx_b = self.objectiveFunction(self.x_b)
+            self.fx_b = self.objectiveFunction(self.x + self.alpha_b*self.dk)
         else:
-            self.interval[1] = copy(self.x_b)
-            old_x_a = copy(self.x_a)
-            self.x_a = self.interval[1] - self.I
-            self.x_b = old_x_a
+            self.internal_interval[1] = copy(self.alpha_b)
+            self.alpha_b = copy(self.alpha_a)
+            self.alpha_a = self.internal_interval[1] - self.I
             self.fx_b = copy(self.fx_a)
-            self.fx_a = self.objectiveFunction(self.x_a)
+            self.fx_a = self.objectiveFunction(self.x + self.alpha_a*self.dk)
