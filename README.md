@@ -16,7 +16,7 @@ For some examples, please check [tests folder](tests/)
 Exercises made for this class (might be in brazilian portuguese):
 1. [Lista 1](Exercises/Lista1/ExerciciosLista1.ipynb)
 2. [Lista 2](Exercises/Lista2/Lista2.ipynb)
-3. [Lista 3](Exercises/Lista3/Lista 3.ipynb)
+3. [Lista 3](Exercises/Lista3/Lista%203.ipynb)
 
 ------
 ## TODO LIST
