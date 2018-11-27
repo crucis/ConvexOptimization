@@ -27,11 +27,12 @@ class functionObj:
         elif hasattr(x, '__iter__'):
             x = np.array(x, dtype = np.float64)
         if self._has_eqc:
-            x = self._prepare_x_for_eqc(x)
-            
+            result = self._func_for_eqc(x)
+        else:
+            result = self.func(x)
+
         if not save_eval:
-            return self.func(x)
-        result = self.func(x)
+            return result
         return self._update_params(x, result)
 
 
@@ -49,12 +50,12 @@ class functionObj:
         elif hasattr(x, '__iter__'):
             x = np.array(x, dtype = np.float64)
         if self._has_eqc:
-            print('grad eqc')
-            x = self._prepare_x_for_eqc(x)
-        print(x)
+            result = grad(self._func_for_eqc)(x)
+        else:
+            result = self._grad(x)
+
         if not save_eval:
             return self._grad(x)
-        result = self._grad(x)
         self.grad_evals = self.grad_evals + 1
         return result
 
@@ -116,8 +117,11 @@ class functionObj:
         return None
         
 
-    def _prepare_x_for_eqc(self, x):
-        return self._null_space_feasible_matrix @ x + self._feasible_vector
+    def _func_for_eqc(self, x):
+        return self.func(self._null_space_feasible_matrix @ x + self._feasible_vector)
+
+
+
 
 class functionObj_multiDim(functionObj):
     def __init__(self, func):
