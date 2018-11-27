@@ -1,4 +1,5 @@
 import autograd.numpy as np
+from scipy.linalg import null_space
 from autograd import grad, jacobian
 from copy import copy
 
@@ -6,6 +7,9 @@ from copy import copy
 class functionObj:
     def __init__(self, func):    
         self.func = func
+        self._func_with_no_constraints = func
+        self._has_eqc = False
+        self._has_iqc = False
         self.fevals = 0
         self.grad_evals = 0
         self.best_x = np.inf
@@ -22,6 +26,8 @@ class functionObj:
             x = float(x)
         elif hasattr(x, '__iter__'):
             x = np.array(x, dtype = np.float64)
+        if self._has_eqc:
+            x = self._prepare_x_for_eqc(x)
             
         if not save_eval:
             return self.func(x)
@@ -42,7 +48,10 @@ class functionObj:
             x = float(x)
         elif hasattr(x, '__iter__'):
             x = np.array(x, dtype = np.float64)
-        
+        if self._has_eqc:
+            print('grad eqc')
+            x = self._prepare_x_for_eqc(x)
+        print(x)
         if not save_eval:
             return self._grad(x)
         result = self._grad(x)
@@ -77,7 +86,38 @@ class functionObj:
         return result
 
 
+    def add_constraints(self, equality=None, inequality=None):
+        if equality is not None:
+            self._has_eqc = True
+            self._feasible_matrix = equality[0]
+            self._feasible_solution = equality[1]
+            self._feasible_vector = self.find_feasable_solution()
+            self._null_space_feasible_matrix = self.find_null_space_feasable_matrix()
+        #if inequality is not None:
+            
+        if (equality is None) and (inequality is None):
+            raise ValueError("Constraints must be passed to be added.")
+        return None
 
+
+    def find_feasable_solution(self):
+        x, _, _, _ = np.linalg.lstsq(self._feasible_matrix, self._feasible_solution)
+        return x
+
+
+    def find_null_space_feasable_matrix(self):
+        return null_space(self._feasible_matrix)
+
+
+    def remove_constraints(self):
+        self.func = self._func_with_no_constraints
+        self._ineequality_constraints = []
+        self._equality_constraints = []
+        return None
+        
+
+    def _prepare_x_for_eqc(self, x):
+        return self._null_space_feasible_matrix @ x + self._feasible_vector
 
 class functionObj_multiDim(functionObj):
     def __init__(self, func):
