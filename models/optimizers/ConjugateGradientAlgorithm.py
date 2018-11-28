@@ -7,7 +7,7 @@ def _conjugate_gradient_algorithm(x, objectiveFunction, xtol, maxIter=1e3):
     direction_vector = -grad_f
     for _ in range(maxIter):
         hessian_f = hessian(objectiveFunction)(x)
-        alpha = np.dot(grad_f.T, grad_f)/np.dot(np.dot(direction_vector.T, hessian_f), direction_vector)
+        alpha = np.dot(grad_f.T, grad_f)/(np.dot(np.dot(direction_vector.T, hessian_f), direction_vector)+1e-9)
         x = x + alpha * direction_vector
         if np.linalg.norm(alpha*direction_vector) < xtol:
             break
