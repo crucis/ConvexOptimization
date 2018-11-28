@@ -33,18 +33,7 @@ class BacktrackingLineSearch(optimizer):
                                                     self.maxIter, 
                                                     self._line_search, 
                                                     self.xtol)
-        #grad_x = copy(self.objectiveFunction.grad(self.x))
-        #if (self.delta_x is None) or (self.objectiveFunction.best_x < np.inf):
-        #    self.delta_x = copy(-grad_x)
 
-        #for _ in range(self.maxIter):
-        #    self.t = 1
-        #    self._backtracking_line_search(grad_x)
-        #    self.x = self.x + self.t * self.delta_x
-        #    grad_x = copy(self.objectiveFunction.grad(self.x))
-        #    if np.linalg.norm(grad_x) <= self.xtol:
-        #        break
-        #    self.delta_x = copy(-grad_x)
         return self.x
 
 
@@ -62,7 +51,6 @@ class BacktrackingLineSearch(optimizer):
             f_x_tdeltax = f_x_tdeltax.T @ f_x_tdeltax
 
         while ~np.isclose(f_x_tdeltax, f_x + self.alpha*t*(np.transpose(grad_x) @ delta_x), rtol=1e-3):
-            #print(f_x_tdeltax, '-----:',f_x + self.alpha*t*(np.transpose(grad_x) @ delta_x))
             t = self.beta * t
             f_x_tdeltax = self.objectiveFunction(x + t * delta_x)
             if hasattr(f_x_tdeltax, '__iter__'):
