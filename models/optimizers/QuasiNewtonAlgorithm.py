@@ -57,8 +57,8 @@ def _quasi_newton_algorithm(x, objectiveFunction, formula, xtol, maxIter):
                 grad_f = np.dot(objectiveFunction.grad(x+alpha_0*direction_vector).T, direction_vector)
 
                 # step 6 extrapolation
-                if (grad_f < sigma * grad_fL) and (abs(f_L - f) > epsilon_2):# and (objectiveFunction.fevals < M_hat): 
-                    delta_alpha_0 = (alpha_0 - alpha_L)*grad_f/(grad_fL - grad_f)
+                if (grad_f < sigma * grad_fL) and (abs(f_L - f) > epsilon_2):# and (~np.isclose(grad_fL - grad_f, 0)): 
+                    delta_alpha_0 = (alpha_0 - alpha_L)*grad_f/(grad_fL - grad_f + 1e-9)
                     if delta_alpha_0 <= 0:
                         alpha_tilde = 2*alpha_0
                     else:
