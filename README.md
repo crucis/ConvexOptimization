@@ -19,12 +19,12 @@ Exercises made for this class (might be in brazilian portuguese):
 3. [Lista 3](Exercises/Lista3/Lista%203.ipynb)
 
 ------
-## TODO LIST
+## TO DO LIST
 1. Lista 4.
 2. Final project of the subject.
 3. Redo Lista 2.
 4. Separate module line searchs from optimizers.
-5. Fix Autograd ArrayBoxes bug.
+5. ~Fix Autograd ArrayBoxes bug.~
 6. Debug Fletcher's Inexact Line Search
 7. Update all line searchs to expect the same inputs and return the same outputs.
 8. Clean up code.
