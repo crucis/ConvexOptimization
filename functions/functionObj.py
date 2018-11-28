@@ -12,8 +12,8 @@ class functionObj:
         self._has_iqc = False
         self.fevals = 0
         self.grad_evals = 0
-        self.best_x = np.inf
-        self.best_f = np.inf
+        self._best_x = np.inf
+        self._best_f = np.inf
         self.all_best_f = []
         self.all_best_x = []
         self.all_evals = []
@@ -43,6 +43,17 @@ class functionObj:
     def nevals(self):
         return self.fevals + self.grad_evals
 
+
+    @ property
+    def best_x(self):
+        return self._best_x if not hasattr(self._best_x, '_value') else self._best_x._value
+
+
+    @ property
+    def best_f(self):
+        return self._best_f if not hasattr(self._best_f, '_value') else self._best_f._value
+
+    
     def grad(self, x, save_eval = True):
         if type(x) == int:
             x = float(x)
@@ -75,13 +86,13 @@ class functionObj:
         self.all_evals += [result_copy]
         self.all_x += [x_copy]
 
-        found_best = np.all(result_copy <= self.best_f)
+        found_best = np.all(result_copy <= self._best_f)
 
         if found_best:
-            self.all_best_x += [x_copy]
-            self.all_best_f += [result_copy]
-            self.best_x = x_copy
-            self.best_f = result_copy
+            self._best_x = x_copy
+            self._best_f = result_copy
+            self.all_best_x += [self.best_x]
+            self.all_best_f += [self.best_f]
         return result
 
 
@@ -141,9 +152,9 @@ class functionObj_multiDim(functionObj):
 
         self.all_evals += [[result_copy]]
         self.all_x += [[x_copy]]
-        found_best = np.all(result_copy <= self.best_f)
+        found_best = np.all(result_copy <= self._best_f)
 
         if found_best:
-            self.best_x = x_copy
-            self.best_f = result_copy
+            self._best_x = x_copy
+            self._best_f = result_copy
         return result
