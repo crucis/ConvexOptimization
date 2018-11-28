@@ -42,19 +42,19 @@ class BacktrackingLineSearch(optimizer):
         delta_x = dk
         grad_x = copy(-dk)
         f_x = self.objectiveFunction(x)
-
-        if hasattr(f_x, '__iter__'):
-            f_x = f_x.T @ f_x
+        if np.shape(f_x) is not ():
+            print('opa')
+            f_x = np.dot(f_x.T,f_x)
         f_x_tdeltax = self.objectiveFunction(x + t * delta_x)
 
-        if hasattr(f_x_tdeltax, '__iter__'):
-            f_x_tdeltax = f_x_tdeltax.T @ f_x_tdeltax
+        if np.shape(f_x_tdeltax) is not ():
+            f_x_tdeltax = np.dot(f_x_tdeltax.T, f_x_tdeltax)
 
         while ~np.isclose(f_x_tdeltax, f_x + self.alpha*t*(np.transpose(grad_x) @ delta_x), rtol=1e-3):
             t = self.beta * t
             f_x_tdeltax = self.objectiveFunction(x + t * delta_x)
-            if hasattr(f_x_tdeltax, '__iter__'):
-                f_x_tdeltax = f_x_tdeltax.T @ f_x_tdeltax
+            if np.shape(f_x_tdeltax) is not ():
+                f_x_tdeltax = np.dot(f_x_tdeltax.T, f_x_tdeltax)
             if t < 2*self.xtol:
                 break
         return t, f_x_tdeltax
