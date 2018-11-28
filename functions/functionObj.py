@@ -5,7 +5,7 @@ from copy import copy
 
 
 class functionObj:
-    def __init__(self, func):    
+    def __init__(self, func, eqc=None, iqc=None):    
         self.func = func
         self._func_with_no_constraints = func
         self._has_eqc = False
@@ -19,6 +19,8 @@ class functionObj:
         self.all_evals = []
         self.all_x = []
         self._grad = grad(self.func)
+        if (eqc is not None) or (iqc is not None):
+            self.add_constraints(equality=eqc, inequality=iqc)
 
 
     def __call__(self, x, save_eval = True):
@@ -26,13 +28,10 @@ class functionObj:
             x = float(x)
         elif hasattr(x, '__iter__'):
             x = np.array(x, dtype = np.float64)
-        if self._has_eqc:
-            result = self._func_for_eqc(x)
-        else:
-            result = self.func(x)
 
         if not save_eval:
-            return result
+            return self.func(x)
+        result = self.func(x)
         return self._update_params(x, result)
 
 
@@ -49,13 +48,9 @@ class functionObj:
             x = float(x)
         elif hasattr(x, '__iter__'):
             x = np.array(x, dtype = np.float64)
-        if self._has_eqc:
-            result = grad(self._func_for_eqc)(x)
-        else:
-            result = self._grad(x)
-
         if not save_eval:
             return self._grad(x)
+        result = self._grad(x)
         self.grad_evals = self.grad_evals + 1
         return result
 
@@ -72,7 +67,10 @@ class functionObj:
                 x = list(map(lambda x: x if not hasattr(x, '_value') else x._value, x))
         x_copy = x if not hasattr(x, '_value') else x._value
 
-        assert np.isnan(result_copy).all() == False, "X out of domain"
+        assert np.any(np.isnan(result_copy)) == False, "X out of domain"
+        if self._has_eqc:
+            x_copy = np.squeeze(
+                self._null_space_feasible_matrix @ np.reshape(x_copy, (-1,1)) + self._feasible_vector)
 
         self.all_evals += [result_copy]
         self.all_x += [x_copy]
@@ -94,6 +92,10 @@ class functionObj:
             self._feasible_solution = equality[1]
             self._feasible_vector = self.find_feasable_solution()
             self._null_space_feasible_matrix = self.find_null_space_feasable_matrix()
+            func = copy(self.func)
+            self.func = lambda x: np.squeeze(func(
+                    np.dot(self._null_space_feasible_matrix, x[:, np.newaxis]) + self._feasible_vector))
+            self._grad = grad(self.func)
         #if inequality is not None:
             
         if (equality is None) and (inequality is None):
@@ -112,15 +114,8 @@ class functionObj:
 
     def remove_constraints(self):
         self.func = self._func_with_no_constraints
-        self._ineequality_constraints = []
-        self._equality_constraints = []
         return None
         
-
-    def _func_for_eqc(self, x):
-        return self.func(self._null_space_feasible_matrix @ x + self._feasible_vector)
-
-
 
 
 class functionObj_multiDim(functionObj):
