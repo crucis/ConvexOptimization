@@ -1,11 +1,10 @@
 from models.optimizers import QuasiNewtonAlgorithm
-from functions import functionObj, exercise61
+from functions import functionObj, rosenbrock
 from scipy.optimize import minimize
 import autograd.numpy as np
 
-x_0 = np.zeros(16)
-f_x = exercise61
-
+x_0 = np.array([2,-2])#np.zeros(2)
+f_x = rosenbrock
 print('-----------Scipy - QuasiNewtown=BFGS-----------')
 
 f_x_obj = functionObj(f_x)

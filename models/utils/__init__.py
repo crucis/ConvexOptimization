@@ -1,5 +1,7 @@
 from .MatthewsDaviesAlgorithm import MatthewsDaviesAlgorithm
+from .unconstrain import UnconstrainProblem
 
 __all__ = [
-    'MatthewsDaviesAlgorithm'
+    'MatthewsDaviesAlgorithm',
+    'UnconstrainProblem'
 ]
