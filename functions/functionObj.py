@@ -10,6 +10,7 @@ class functionObj:
         self._func_with_no_constraints = func
         self._has_eqc = False
         self._has_iqc = False
+        self._ineq_constraints = lambda x: 0
         self.niq = 0
         self.fevals = 0
         self.grad_evals = 0
@@ -87,14 +88,15 @@ class functionObj:
             x_copy = np.squeeze(
                 self._null_space_feasible_matrix @ np.reshape(x_copy, (-1,1)) + self._feasible_vector)
 
-        self.all_evals += [result_copy]
+        result_to_be_saved = self._func_with_no_constraints(np.array(x_copy))
+        self.all_evals += [result_to_be_saved]
         self.all_x += [x_copy]
 
-        found_best = np.all(result_copy <= self._best_f)
+        found_best = np.all(result_to_be_saved <= self.best_f)
 
         if found_best:
             self._best_x = x_copy
-            self._best_f = result_copy
+            self._best_f = result_to_be_saved
             self.all_best_x += [self.best_x]
             self.all_best_f += [self.best_f]
         return result
@@ -116,8 +118,9 @@ class functionObj:
                     result += [-np.inf] if u >= 0 else [np.log(-u)]
                 return result
             func = deepcopy(self.func)
-            self.func = lambda x: self._func_with_no_constraints(x) - \
-                                 (1/self.smooth_log_constant) * np.sum(ineq_func(x))
+            self._ineq_constraints = lambda x: (1/self.smooth_log_constant) * np.sum(ineq_func(x))
+            self.func = lambda x: self._func_with_no_constraints(x) - self._ineq_constraints(x)
+
         if equality is not None:
             assert type(equality) is tuple, "Equality must be a tuple."
             self._has_eqc = True
@@ -139,6 +142,11 @@ class functionObj:
     def find_feasable_solution(self):
         x, _, _, _ = np.linalg.lstsq(self._feasible_matrix, self._feasible_solution)
         return x
+
+
+    def is_feasible(self, optimizer, x0):
+        f_x = lambda x: x - self._ineq_constraints(x)
+        
 
 
     def find_null_space_feasable_matrix(self):
