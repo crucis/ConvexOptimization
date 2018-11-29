@@ -2,9 +2,9 @@ from autograd import numpy as np
 
 
 class UnconstrainProblem:
-    def __init__(self, f, x0, opt, mu=20, line_search_optimizer=None, maxIter = 1e3, xtol=1e-6):
-        self.objectiveFunction = f
-        self.x_0 = x0
+    def __init__(self, func, x_0, opt, mu=20, line_search_optimizer=None, maxIter = 1e3, xtol=1e-6):
+        self.objectiveFunction = func
+        self.x_0 = x_0
         self.optimizer = opt
         self.maxIter = maxIter
         self.xtol = xtol
@@ -29,6 +29,7 @@ class UnconstrainProblem:
                 x0 = self.objectiveFunction.best_z
             else:
                 x0 = self.objectiveFunction.best_x
+            x0 = np.array(x0, dtype=np.float64)
             # Break if m/t < epsilon
             if self.objectiveFunction.niq/self.objectiveFunction.smooth_log_constant < self.xtol:
                 break
