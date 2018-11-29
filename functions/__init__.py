@@ -8,6 +8,11 @@ from .functions import exercise520_gauss
 from .functions import exercise61
 from .functions import rosenbrock
 from .functions import exercise54
+from .functions import exercise1116
+from .functions import question42
+from .functions import question43
+from .functions import question44
+from .functions import question45
 from .functionObj import functionObj
 from .functionObj import functionObj_multiDim
 
@@ -23,5 +28,10 @@ __all__ = ['order4_polynomial',
             'exercise61',
             'rosenbrock',
             'exercise54',
+            'exercise1116',
+            'question42',
+            'question43',
+            'question44',
+            'question45',
             'functionObj',
             'functionObj_multiDim']

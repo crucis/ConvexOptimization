@@ -67,3 +67,54 @@ def rosenbrock(x):
 def exercise54(x):
     assert len(x) == 2, 'x must be a 2-dimensional variable'
     return 5*x[0]**2 - 9 *x[0]*x[1] + 4.075*x[1]**2 + x[0]
+
+
+def exercise1116():
+    A = np.array([[1,2,1,2], [1,1,2,4]], dtype=np.float64)
+    b = np.array([[3], [5]], dtype=np.float64)
+    c = np.array([1, 1.5, 1, 1], dtype=np.float64)
+    bound = [lambda x: -x[0],lambda x:  -x[1],lambda x:  -x[2],lambda x:  -x[3]]
+    f_x = lambda x: np.dot(c, x)
+    return f_x, (A,b), bound
+
+
+def question42():
+    f_x = lambda x: np.linalg.norm(x[0:2] - x[2:4])**2
+    f1_x = lambda x: -(-x[:2] @ np.array([[0.25, 0], [0, 1]], dtype=np.float64) @ x[:2] + x[:2] @ np.array([0.5, 0], dtype=np.float64) + 0.75)
+    f2_x = lambda x: -(-0.125 * (x[2:] @ np.array([[5, 3], [3, 5]], dtype=np.float64) @ x[2:]) + x[2:] @ np.array([5.5, 6.5], dtype=np.float64))
+    bound = [f1_x, f2_x]
+    return f_x, bound
+
+
+def question43():
+    Q = np.array([[4,0,0], [0,1,-1],[0,-1,1]], dtype=np.float64)
+    c = np.array([-8,-6,-6], dtype=np.float64)
+    f_x = lambda x: 0.5 * x.T @ Q @ x + x.T @ c
+    A = np.array([[1,1,1]], dtype=np.float64)
+    b = np.array([[3]], dtype=np.float64)
+    bound = [lambda x: -x[0],lambda x:  -x[1],lambda x:  -x[2]]
+    return f_x, (A,b), bound
+
+
+def question44():
+    F_0 = np.array([[0.5, 0.55, 0.33, 2.38],[0.55, 0.18, -1.18, -0.40], [0.33, -1.18, -0.94, 1.46], [2.38, -0.40, 1.46, 0.17]], dtype=np.float64)
+    F_1 = np.array([[5.19, 1.54, 1.56, -2.80], [1.54, 2.2, 0.39, -2.5], [1.56, 0.39, 4.43, 1.77], [-2.8, -2.5, 1.77, 4.06]], dtype=np.float64)
+    F_2 = np.array([[-1.11, 0, -2.12, 0.38], [0, 1.91, -0.25, -0.58], [-2.12, -0.25, -1.49, 1.45], [0.38, -0.58, 1.45, 0.63]], dtype=np.float64)
+    F_3 = np.array([[2.69, -2.24, -0.21, -0.74], [-2.24, 1.77, 1.16, -2.01], [-0.21, 1.16, -1.82, -2.79], [-0.74, -2.10, -2.79, -2.22]], dtype=np.float64)
+    F_4 = np.array([[0.58, -2.19, 1.69, 1.28], [-2.19, -0.05, -0.01, 0.91], [1.69, -0.01, 2.56, 2.14], [1.28, 0.91, 2.14, -0.75]], dtype=np.float64)
+
+    all_F = np.array([F_0, F_1, F_2, F_3, F_4])
+    c = np.array([1, 0, 2, -1], dtype=np.float64)
+
+    f_x = lambda x: c.T @ x
+    ineq = lambda x: [-(F + np.sum(x@F))for F in all_F]
+    return f_x, ineq
+
+
+def question45():
+    f_x = lambda x: 100*(x[0]**2 - x[1])**2 + (x[0] - 1)**2 + 90*(x[2]**2 - x[3]**2)**2 + (x[2]**2 - 1)**2 + 10.1*((x[1]-1)**2+(x[3]-1)**2) + 19.8*(x[1]-1)*(x[3]-1)
+    bound = [lambda x: np.abs(x[0])-10,lambda x:  np.abs(x[1])-10,lambda x:  np.abs(x[2])-10,lambda x:  np.abs(x[3])-10]
+    return f_x, bound
+
+
+
