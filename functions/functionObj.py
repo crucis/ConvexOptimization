@@ -22,7 +22,7 @@ class functionObj:
         self.all_evals = []
         self.all_x = []
         self.smooth_log_constant = 1
-        self._grad = grad(self.func)
+        self._grad = self._set_grad(func)
         if (eqc is not None) or (iqc is not None):
             self.add_constraints(equality=eqc, inequality=iqc)
 
@@ -70,6 +70,11 @@ class functionObj:
         return result
 
 
+    def _set_grad(self, func):
+        g = jacobian(func)
+        return g
+
+
     def _update_params(self, x, result):
         self.fevals = self.fevals + 1
         
@@ -88,7 +93,8 @@ class functionObj:
             x_copy = np.squeeze(
                 self._null_space_feasible_matrix @ np.reshape(x_copy, (-1,1)) + self._feasible_vector)
 
-        result_to_be_saved = self._func_with_no_constraints(np.array(x_copy))
+        #result_to_be_saved = self._func_with_no_constraints(np.array(x_copy))
+        result_to_be_saved = result_copy
         self.all_evals += [result_to_be_saved]
         self.all_x += [x_copy]
 
@@ -115,7 +121,7 @@ class functionObj:
                 result = []
                 for f in inequality:
                     u = f(x)
-                    result += [-np.inf] if u >= 0 else [np.log(-u)]
+                    result += [-np.inf] if np.any(u >= 0) else [np.sum(np.log(-u))]
                 return result
             func = deepcopy(self.func)
             self._ineq_constraints = lambda x: (1/self.smooth_log_constant) * np.sum(ineq_func(x))
@@ -135,7 +141,7 @@ class functionObj:
            
         if (equality is None) and (inequality is None):
             raise ValueError("Constraints must be passed to be added.")
-        self._grad = grad(self.func)
+        self._grad = self._set_grad(self.func)
         return None
 
 
