@@ -50,12 +50,20 @@ class functionObj:
 
     @ property
     def best_x(self):
-        return self._best_x if not hasattr(self._best_x, '_value') else self._best_x._value
+        x = self._best_x
+        while hasattr(x, '_value'):
+            x = x._value
+        # self._best_x if not hasattr(self._best_x, '_value') else self._best_x._value
+        return x
 
 
     @ property
     def best_f(self):
-        return self._best_f if not hasattr(self._best_f, '_value') else self._best_f._value
+        f = self._best_f
+        while hasattr(f, '_value'):
+            f = f._value
+        #self._best_f if not hasattr(self._best_f, '_value') else self._best_f._value
+        return f
 
     
     def grad(self, x, save_eval = True):
