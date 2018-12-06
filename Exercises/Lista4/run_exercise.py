@@ -9,42 +9,48 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
+from scipy.optimize import minimize
 
 from functions import functionObj
 from models.utils import UnconstrainProblem
 
 
-def run_exercise(func, eqc, iqc, optimizers, formula=None, line_search=None, seed=42, epsilon=1e-6, maxIter=1e3, plot_charts=True):
-    initial_f_names = []
+def run_exercise(func, eqc, iqc, optimizers, initial_x, mu=20, line_search=None, seed=42, epsilon=1e-6, maxIter=1e3, plot_charts=True):
+    opt_names = []
 
     np.random.seed(seed) # forces repeatability
-    initial_x = np.array([0, 0], dtype=np.float64)
-
-    all_fx = [functionObj(func, eqc, iqc) for _ in optimizers]#[f_x1, f_x2, f_x3]
-    all_x = [initial_x]
+    optimizers += [minimize]
+    all_fx = [functionObj(func, eqc=eqc, iqc=iqc) for _ in optimizers]
     timings = []
 
     timings.append(time.process_time())
     for fx, opt in zip(all_fx, optimizers):
         if type(opt) is tuple:
             opt, line_search = opt
-        initial_f_names += [opt.__name__]
+        opt_names += [opt.__name__]
         try:
             if line_search is not None:
                 ls = line_search(fx, initial_x)
                 UnconstrainProblem(func=fx, x_0=initial_x, opt=opt, line_search_optimizer=ls, xtol=epsilon, maxIter=maxIter).find_min()
                 line_search = None
-            elif formula is None:
-                UnconstrainProblem(func=fx, x_0=initial_x, opt=opt, xtol=epsilon, maxIter=maxIter).find_min()
+            elif opt is minimize:
+                x0 = initial_x
+                while fx.niq/fx.smooth_log_constant > epsilon:
+                    minimize(fun=fx, x0=x0)
+                    if fx._has_eqc:
+                        x0 = fx.best_z
+                    else:
+                        x0 = fx.best_x
+                    fx.smooth_log_constant *= mu
             else:
-                UnconstrainProblem(func=fx, x_0=initial_x, opt=opt, formula=formula, xtol=epsilon, maxIter=maxIter).find_min()
-        except:
-            pass
+                UnconstrainProblem(func=fx, x_0=initial_x, opt=opt, xtol=epsilon, maxIter=maxIter).find_min()
+        except Exception as e:
+            print(opt.__name__+" didn't converge. "+repr(e))
         timings.append(time.process_time())
         
     timings = list(map(operator.sub, timings[1:], timings[:-1]))
 
-    df = create_df(initial_f_names, all_fx, timings)
+    df = create_df(opt_names, all_fx, timings)
 
     if plot_charts == True:
         opt_name = opt.__name__
@@ -52,29 +58,15 @@ def run_exercise(func, eqc, iqc, optimizers, formula=None, line_search=None, see
 
     return df
 
-def create_df(initial_f_names, all_fx, timings):
+def create_df(opt_names, all_fx, timings):
     # create dataframe
     methods = ['all_best_x', 'all_best_f', 'best_x', 'best_f', 'fevals','grad_evals', 'nevals', 'all_evals', 'all_x']
     
     dict_fx = {x_name: {method: getattr(fx, method) for method in methods}\
-               for x_name, fx in zip(initial_f_names, all_fx)}
+               for x_name, fx in zip(opt_names, all_fx)}
     df = pd.DataFrame(dict_fx).T
-    df['best_f'] = df['best_f'].map(lambda x: x if not hasattr(x, '_value') else x._value)
-    df['best_x'] = df['best_x'].map(lambda x: x if not hasattr(x, '_value') else x._value)
+    df['best_x'] = df['best_x'].map(lambda x: np.round(x, 7))
 
-    if hasattr(df.iloc[0]['best_x'], '_value'):
-        for i in range(len(df.iloc[0]['best_x'])):
-            df['best_x'+str(i)] = df['best_x'].map(lambda x: x if not hasattr(x, '_value') else x._value[i])
-    else:
-        df['best_x'] = df['best_x'].map(lambda x: x if not hasattr(x, '_value') else x._value)
-    df['all_evals'] = df['all_evals'].map(lambda x: x._value if hasattr(x, '_value') \
-                                          else x)
-    df['all_x'] = df['all_x'].map(lambda x: x._value if hasattr(x, '_value') \
-                                          else x)
-    df['all_best_x'] = df['all_best_x'].map(lambda x: x._value if hasattr(x, '_value') \
-                                          else x)
-    df['all_best_f'] = df['all_best_f'].map(lambda x: x._value if hasattr(x, '_value') \
-                                          else x)
     df['run_time (s)'] = timings
     
     return df
