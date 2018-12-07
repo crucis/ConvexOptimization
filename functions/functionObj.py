@@ -53,7 +53,6 @@ class functionObj:
         x = self._best_x
         while hasattr(x, '_value'):
             x = x._value
-        # self._best_x if not hasattr(self._best_x, '_value') else self._best_x._value
         return x
 
 
@@ -62,7 +61,6 @@ class functionObj:
         f = self._best_f
         while hasattr(f, '_value'):
             f = f._value
-        #self._best_f if not hasattr(self._best_f, '_value') else self._best_f._value
         return f
 
     
@@ -96,21 +94,21 @@ class functionObj:
         x_copy = x if not hasattr(x, '_value') else x._value
 
         assert np.any(np.isnan(result_copy)) == False, "X out of domain"
+        
+        found_best = np.all(result_copy <= self.best_f)
+
         if self._has_eqc:
-            self.best_z = x_copy
+            if found_best: 
+                self.best_z = x_copy
             x_copy = np.squeeze(
                 self._null_space_feasible_matrix @ np.reshape(x_copy, (-1,1)) + self._feasible_vector)
 
-        #result_to_be_saved = self._func_with_no_constraints(np.array(x_copy))
-        result_to_be_saved = result_copy
-        self.all_evals += [result_to_be_saved]
+        self.all_evals += [result_copy]
         self.all_x += [x_copy]
-
-        found_best = np.all(result_to_be_saved <= self.best_f)
 
         if found_best:
             self._best_x = x_copy
-            self._best_f = result_to_be_saved
+            self._best_f = result_copy
             self.all_best_x += [self.best_x]
             self.all_best_f += [self.best_f]
         return result
@@ -156,11 +154,6 @@ class functionObj:
     def find_feasable_solution(self):
         x, _, _, _ = np.linalg.lstsq(self._feasible_matrix, self._feasible_solution)
         return x
-
-
-    def is_feasible(self, optimizer, x0):
-        f_x = lambda x: x - self._ineq_constraints(x)
-        
 
 
     def find_null_space_feasable_matrix(self):
