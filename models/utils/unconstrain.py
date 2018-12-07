@@ -20,6 +20,7 @@ class UnconstrainProblem:
         self.objectiveFunction.smooth_log_constant = 1
         x0 = self.x_0
         for _ in range(int(self.maxIter)):
+            self.params['xtol'] = self.objectiveFunction.niq/self.objectiveFunction.smooth_log_constant
             # centering Step
             opt = self.optimizer(self.objectiveFunction, x0, **self.params)
             opt.find_min()
