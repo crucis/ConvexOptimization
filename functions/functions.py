@@ -122,8 +122,7 @@ def question44():
     c = np.array([1, 0, 2, -1], dtype=np.float64)
 
     f_x = lambda x: np.dot(c.T, x)
-    #ineq = [lambda x: -(H + np.sum([x[i]*F for i, F in enumerate(all_F[1:])], axis=0)) for H in all_F]
-    ineq = [lambda x: -(F_0 + np.sum([x[i]*F for i, F in enumerate(all_F[1:])], axis=0))]
+    ineq = [lambda x: -(H + np.sum([x[i]*F for i, F in enumerate(all_F[1:])], axis=0)) for H in all_F]
     return f_x, ineq
 
 

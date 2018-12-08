@@ -15,23 +15,42 @@ class FilterDesign:
         if stopband_gain is None:
             if stopband_attenuation is None:
                 raise ValueError('Stopband_gain or stopband_attenuation must be passed.')
-            stopband_gain = 10**(-0.05*stopband_attenuation)
-        self.Q = get_Q(w_a=stopband_edge, w_p=passband_edge, order_length=order_length, gamma=gamma)
-        self.b_l = get_bl(order_length=order_length, w_p=passband_edge)
-        self.A = get_A(nb_sampled_frequencies_pass=nb_sampled_frequencies_pass,
-                        nb_sampled_frequencies_stop=nb_sampled_frequencies_stop,
-                        passband_edge=passband_edge,
-                        stopband_edge=stopband_edge, 
-                        order_length=order_length)
-        self.b = get_b_constraint(stopband_gain=stopband_gain,
-                                    nb_sampled_frequencies_pass=nb_sampled_frequencies_pass,
-                                    nb_sampled_frequencies_stop=nb_sampled_frequencies_stop,
-                                    passband_error=passband_error)
+            self.stopband_gain = 10**(-0.05*stopband_attenuation)
+        else:
+            self.stopband_gain = stopband_gain
+
+        self.passband_edge = passband_edge
+        self.stopband_edge = stopband_edge
+        self.passband_error = passband_error
+        self.passband_gain = passband_gain 
+        self.order_length = order_length
+        self.nb_sampled_frequencies_pass = nb_sampled_frequencies_pass
+        self.nb_sampled_frequencies_stop = nb_sampled_frequencies_stop
+        self.gamma = gamma
+
+        self.Q = get_Q(w_a=self.stopband_edge, w_p=self.passband_edge, order_length=self.order_length, gamma=self.gamma)
+        self.b_l = get_bl(order_length=self.order_length, w_p=self.passband_edge)
+        self.A = get_A(nb_sampled_frequencies_pass=self.nb_sampled_frequencies_pass,
+                        nb_sampled_frequencies_stop=self.nb_sampled_frequencies_stop,
+                        passband_edge=self.passband_edge,
+                        stopband_edge=self.stopband_edge, 
+                        order_length=self.order_length)
+        self.b = get_b_constraint(stopband_gain=self.stopband_gain,
+                                    nb_sampled_frequencies_pass=self.nb_sampled_frequencies_pass,
+                                    nb_sampled_frequencies_stop=self.nb_sampled_frequencies_stop,
+                                    passband_error=self.passband_error)
         self.kapa = kapa
         self.freq_response = lambda w, x: complex(np.dot(x.T, get_cl(w, order_length)), 
                                                     -np.dot(x.T, get_sl(w, order_length)))
         self.f_x = lambda x: np.dot(np.dot(x.T, self.Q), x) - 2*np.dot(self.b_l, x) + self.kapa
         self.iqc = lambda x: np.dot(self.A, x) - self.b
+
+class minMaxFilterDesign:
+    def __init__(self):
+        pass
+
+
+
 
 
 def get_Q(w_a, w_p, order_length,  gamma=25):
@@ -69,10 +88,9 @@ def get_Ap(nb_sampled_frequencies, passband_edge, stopband_edge, order_length):
     return np.concatenate((App, Anp))
 
 
-
 def get_bp(nb_sampled_frequencies, passband_error):
-    bpp = np.array([1+passband_error for _ in range(nb_sampled_frequencies)])
-    bnp = np.array([-1+passband_error for _ in range(nb_sampled_frequencies)])
+    bpp = np.array([1 + passband_error for _ in range(nb_sampled_frequencies)])
+    bnp = np.array([-1 + passband_error for _ in range(nb_sampled_frequencies)])
     bp = np.concatenate((bpp, bnp))
     return bp
 
