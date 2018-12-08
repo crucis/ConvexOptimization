@@ -27,25 +27,25 @@ def run_exercise(func, eqc, iqc, optimizers, initial_x, mu=20, line_search=None,
     for fx, opt in zip(all_fx, optimizers):
         if type(opt) is tuple:
             opt, line_search = opt
-        opt_names += [opt.__name__]
+        opt_names += [opt.__name__ if line_search is None else opt.__name__ +' + '+line_search.__name__]
         try:
             if line_search is not None:
-                ls = line_search(fx, initial_x)
-                UnconstrainProblem(func=fx, x_0=initial_x, opt=opt, line_search_optimizer=ls, xtol=epsilon, maxIter=maxIter).find_min()
-                line_search = None
+                UnconstrainProblem(func=fx, x_0=initial_x, opt=opt, line_search_optimizer=line_search, xtol=epsilon, maxIter=maxIter).find_min()
             elif opt is minimize:
                 x0 = initial_x
                 while fx.niq/fx.smooth_log_constant > epsilon:
-                    minimize(fun=fx, x0=x0)
+                    res = minimize(fun=fx, x0=x0)
                     if fx._has_eqc:
                         x0 = fx.best_z
                     else:
                         x0 = fx.best_x
                     fx.smooth_log_constant *= mu
+                fx.grad_evals = res.njev + res.nhev
             else:
                 UnconstrainProblem(func=fx, x_0=initial_x, opt=opt, xtol=epsilon, maxIter=maxIter).find_min()
         except Exception as e:
             print(opt.__name__+" didn't converge. "+repr(e))
+        line_search = None
         timings.append(time.process_time())
         
     timings = list(map(operator.sub, timings[1:], timings[:-1]))
