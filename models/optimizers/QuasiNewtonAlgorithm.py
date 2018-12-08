@@ -32,9 +32,9 @@ def _quasi_newton_algorithm(x, objectiveFunction, formula, xtol, maxIter):
             alpha_0 = 1
         # step 3
         for _ in range(maxIter):
+            delta_k = alpha_0*direction_vector
             if alpha_0 < xtol:
                 break
-            delta_k = alpha_0*direction_vector
             if np.square(np.linalg.norm(delta_k)) < xtol:
                 break
             f = objectiveFunction(x+delta_k)
