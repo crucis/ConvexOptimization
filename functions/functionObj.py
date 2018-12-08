@@ -2,6 +2,10 @@ import autograd.numpy as np
 from scipy.linalg import null_space
 from autograd import grad, jacobian
 from copy import copy, deepcopy
+import sys
+if '../' not in sys.path:
+    sys.path.append('../')
+from models.utils.linalg import is_pos_def, remove_arraybox
 
 
 class functionObj:
@@ -85,13 +89,8 @@ class functionObj:
         self.fevals = self.fevals + 1
         
         # Autograd ArrayBox behaves differently from numpy, that fixes it.
-        result_copy = result if not hasattr(result, '_value') else result._value
-        if hasattr(x, '__iter__'):
-            if hasattr(x[0], '__iter__'):
-                x = list(map(lambda x: list(map(lambda x: x if not hasattr(x, '_value') else x._value, x)), x))
-            else:
-                x = list(map(lambda x: x if not hasattr(x, '_value') else x._value, x))
-        x_copy = x if not hasattr(x, '_value') else x._value
+        result_copy = remove_arraybox(result)
+        x_copy = remove_arraybox(x)
 
         assert np.any(np.isnan(result_copy)) == False, "X out of domain"
         
@@ -127,9 +126,16 @@ class functionObj:
                 result = []
                 for f in inequality:
                     u = f(x)
-                    result += [-np.inf] if np.any(u >= 0) else [np.sum(np.log(-u))]
+                    #u = remove_arraybox(u)
+                    size_u = np.size(np.shape(u))
+                    if size_u == 2:
+                        result += [-np.inf] if np.any(u >= 0) else [np.log(np.linalg.det(-u))] 
+                    elif size_u == 1:
+                        result += [-np.inf] if np.any(u >= 0) else [np.sum(np.log(-u))]
+                    else:
+                        result += [-np.inf] if u >= 0 else [np.log(-u)]
+                    #result += [-np.inf] if np.any(u >= 0) else [np.sum(np.log(-u))]
                 return result
-            func = deepcopy(self.func)
             self._ineq_constraints = lambda x: (1/self.smooth_log_constant) * np.sum(ineq_func(x))
             self.func = lambda x: self._func_with_no_constraints(x) - self._ineq_constraints(x)
 
@@ -164,8 +170,8 @@ class functionObj:
         self.func = self._func_with_no_constraints
         self.niq = 0
         return None
+ 
         
-
 
 class functionObj_multiDim(functionObj):
     def __init__(self, func):
