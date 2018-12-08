@@ -15,7 +15,7 @@ def _steepest_descent_algorithm(x_0, objectiveFunction, maxIter, line_search=Non
         if line_search is not None:
             a0, f0  = line_search(x_k, direction_vector)
         else:
-            f_hat = objectiveFunction(x_k - a0*grad_x)
+            f_hat = objectiveFunction(x_k + a0*direction_vector)
             a0 = (np.dot(grad_x.T, grad_x) * (a0 **2)) / (2 * (f_hat - f0 + a0 * np.dot(grad_x.T, grad_x)))
         x_k = x_k + a0* direction_vector
         if line_search is None:
